@@ -1,50 +1,50 @@
-import { useQuery } from '@tanstack/react-query'
-import { ordersApi, tablesApi } from '../services/api'
-import { DollarSign, ShoppingCart, Users, TrendingUp } from 'lucide-react'
+import { useQuery } from "@tanstack/react-query";
+import { ordersApi, tablesApi } from "../services/api";
+import { DollarSign, ShoppingCart, Users, TrendingUp } from "lucide-react";
 
 export default function Dashboard() {
   const { data: orders } = useQuery({
-    queryKey: ['orders'],
+    queryKey: ["orders"],
     queryFn: async () => {
-      const response = await ordersApi.getAll()
-      return response.data
+      const response = await ordersApi.getAll();
+      return response.data;
     },
-  })
+  });
 
   const { data: tables } = useQuery({
-    queryKey: ['tables'],
+    queryKey: ["tables"],
     queryFn: async () => {
-      const response = await tablesApi.getAll()
-      return response.data
+      const response = await tablesApi.getAll();
+      return response.data;
     },
-  })
+  });
 
   const stats = [
     {
-      label: 'Pedidos Hoje',
+      label: "Pedidos Hoje",
       value: orders?.length || 0,
       icon: ShoppingCart,
-      color: 'text-blue-500',
+      color: "text-blue-500",
     },
     {
-      label: 'Mesas Ocupadas',
-      value: tables?.filter((t: any) => t.status === 'OCCUPIED').length || 0,
+      label: "Mesas Ocupadas",
+      value: tables?.filter((t: any) => t.status === "OCCUPIED").length || 0,
       icon: Users,
-      color: 'text-green-500',
+      color: "text-green-500",
     },
     {
-      label: 'Faturamento',
-      value: 'R$ 2.450',
+      label: "Faturamento",
+      value: "R$ 2.450",
       icon: DollarSign,
-      color: 'text-primary',
+      color: "text-primary",
     },
     {
-      label: 'Crescimento',
-      value: '+12%',
+      label: "Crescimento",
+      value: "+12%",
       icon: TrendingUp,
-      color: 'text-purple-500',
+      color: "text-purple-500",
     },
-  ]
+  ];
 
   return (
     <div className="p-8">
@@ -75,17 +75,21 @@ export default function Dashboard() {
               >
                 <div>
                   <p className="font-medium">
-                    Mesa {order.comanda?.table?.number || 'N/A'}
+                    Mesa {order.comanda?.table?.number || "N/A"}
                   </p>
                   <p className="text-sm text-gray-400">
                     {order.items?.length} itens
                   </p>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-sm ${
-                  order.status === 'DELIVERED' ? 'bg-green-600' :
-                  order.status === 'PREPARING' ? 'bg-blue-600' :
-                  'bg-yellow-600'
-                }`}>
+                <span
+                  className={`px-3 py-1 rounded-full text-sm ${
+                    order.status === "DELIVERED"
+                      ? "bg-green-600"
+                      : order.status === "PREPARING"
+                        ? "bg-blue-600"
+                        : "bg-yellow-600"
+                  }`}
+                >
                   {order.status}
                 </span>
               </div>
@@ -100,9 +104,11 @@ export default function Dashboard() {
               <div
                 key={table.id}
                 className={`aspect-square flex items-center justify-center rounded-lg font-bold ${
-                  table.status === 'OCCUPIED' ? 'bg-red-600' :
-                  table.status === 'RESERVED' ? 'bg-yellow-600' :
-                  'bg-green-600'
+                  table.status === "OCCUPIED"
+                    ? "bg-red-600"
+                    : table.status === "RESERVED"
+                      ? "bg-yellow-600"
+                      : "bg-green-600"
                 }`}
               >
                 {table.number}
@@ -112,5 +118,5 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,7 +1,7 @@
-import { View, StyleSheet } from 'react-native';
-import { Text, Button, Avatar, List } from 'react-native-paper';
-import { useRouter } from 'expo-router';
-import { useAuthStore } from '../store/auth';
+import { View, StyleSheet } from "react-native";
+import { Text, Button, Avatar, List } from "react-native-paper";
+import { useRouter } from "expo-router";
+import { useAuthStore } from "../store/auth";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -9,13 +9,13 @@ export default function ProfileScreen() {
 
   const handleLogout = async () => {
     await logout();
-    router.replace('/login');
+    router.replace("/login");
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Avatar.Text size={80} label={user?.name?.charAt(0) || 'U'} />
+        <Avatar.Text size={80} label={user?.name?.charAt(0) || "U"} />
         <Text variant="headlineSmall" style={styles.name}>
           {user?.name}
         </Text>
@@ -30,17 +30,17 @@ export default function ProfileScreen() {
       <List.Section style={styles.section}>
         <List.Item
           title="Meus Pedidos"
-          left={props => <List.Icon {...props} icon="clipboard-list" />}
+          left={(props) => <List.Icon {...props} icon="clipboard-list" />}
           onPress={() => {}}
         />
         <List.Item
           title="Configurações"
-          left={props => <List.Icon {...props} icon="cog" />}
+          left={(props) => <List.Icon {...props} icon="cog" />}
           onPress={() => {}}
         />
         <List.Item
           title="Ajuda"
-          left={props => <List.Icon {...props} icon="help-circle" />}
+          left={(props) => <List.Icon {...props} icon="help-circle" />}
           onPress={() => {}}
         />
       </List.Section>
@@ -60,31 +60,31 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     padding: 32,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: "#2a2a2a",
   },
   name: {
     marginTop: 16,
   },
   email: {
-    color: '#999',
+    color: "#999",
     marginTop: 4,
   },
   role: {
-    color: '#ff6b00',
+    color: "#ff6b00",
     marginTop: 4,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   section: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
   },
   logoutButton: {
     margin: 16,
-    borderColor: '#ff4444',
+    borderColor: "#ff4444",
   },
 });

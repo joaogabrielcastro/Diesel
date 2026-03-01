@@ -1,34 +1,44 @@
-import { useQuery } from '@tanstack/react-query'
-import { tablesApi } from '../services/api'
+import { useQuery } from "@tanstack/react-query";
+import { tablesApi } from "../services/api";
 
 export default function Tables() {
   const { data: tables } = useQuery({
-    queryKey: ['tables'],
+    queryKey: ["tables"],
     queryFn: async () => {
-      const response = await tablesApi.getAll()
-      return response.data
+      const response = await tablesApi.getAll();
+      return response.data;
     },
-  })
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'AVAILABLE': return 'bg-green-600'
-      case 'OCCUPIED': return 'bg-red-600'
-      case 'RESERVED': return 'bg-yellow-600'
-      case 'CLEANING': return 'bg-blue-600'
-      default: return 'bg-gray-600'
+      case "AVAILABLE":
+        return "bg-green-600";
+      case "OCCUPIED":
+        return "bg-red-600";
+      case "RESERVED":
+        return "bg-yellow-600";
+      case "CLEANING":
+        return "bg-blue-600";
+      default:
+        return "bg-gray-600";
     }
-  }
+  };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'AVAILABLE': return 'Disponível'
-      case 'OCCUPIED': return 'Ocupada'
-      case 'RESERVED': return 'Reservada'
-      case 'CLEANING': return 'Limpeza'
-      default: return status
+      case "AVAILABLE":
+        return "Disponível";
+      case "OCCUPIED":
+        return "Ocupada";
+      case "RESERVED":
+        return "Reservada";
+      case "CLEANING":
+        return "Limpeza";
+      default:
+        return status;
     }
-  }
+  };
 
   return (
     <div className="p-8">
@@ -51,5 +61,5 @@ export default function Tables() {
         ))}
       </div>
     </div>
-  )
+  );
 }

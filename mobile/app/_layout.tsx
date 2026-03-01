@@ -1,6 +1,6 @@
-import { Stack } from 'expo-router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { PaperProvider, MD3DarkTheme } from 'react-native-paper';
+import { Stack } from "expo-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { PaperProvider, MD3DarkTheme } from "react-native-paper";
 
 const queryClient = new QueryClient();
 
@@ -8,10 +8,10 @@ const theme = {
   ...MD3DarkTheme,
   colors: {
     ...MD3DarkTheme.colors,
-    primary: '#ff6b00',
-    secondary: '#ffa500',
-    background: '#1a1a1a',
-    surface: '#2a2a2a',
+    primary: "#ff6b00",
+    secondary: "#ffa500",
+    background: "#1a1a1a",
+    surface: "#2a2a2a",
   },
 };
 

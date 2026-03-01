@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import { View, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { Text, Searchbar, Card, Button, Chip } from 'react-native-paper';
-import { useQuery } from '@tanstack/react-query';
-import { productsApi, categoriesApi } from '../services/api';
+import { useState } from "react";
+import { View, FlatList, StyleSheet, TouchableOpacity } from "react-native";
+import { Text, Searchbar, Card, Button, Chip } from "react-native-paper";
+import { useQuery } from "@tanstack/react-query";
+import { productsApi, categoriesApi } from "../services/api";
 
 export default function NewOrderScreen() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [cart, setCart] = useState<any[]>([]);
 
   const { data: categories } = useQuery({
-    queryKey: ['categories'],
+    queryKey: ["categories"],
     queryFn: async () => {
       const response = await categoriesApi.getAll();
       return response.data;
@@ -18,7 +18,7 @@ export default function NewOrderScreen() {
   });
 
   const { data: products } = useQuery({
-    queryKey: ['products', selectedCategory],
+    queryKey: ["products", selectedCategory],
     queryFn: async () => {
       const response = await productsApi.getAll(selectedCategory || undefined);
       return response.data;
@@ -26,13 +26,15 @@ export default function NewOrderScreen() {
   });
 
   const addToCart = (product: any) => {
-    const existing = cart.find(item => item.id === product.id);
+    const existing = cart.find((item) => item.id === product.id);
     if (existing) {
-      setCart(cart.map(item =>
-        item.id === product.id
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      ));
+      setCart(
+        cart.map((item) =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item,
+        ),
+      );
     } else {
       setCart([...cart, { ...product, quantity: 1 }]);
     }
@@ -43,7 +45,7 @@ export default function NewOrderScreen() {
   };
 
   const getTotal = () => {
-    return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   };
 
   return (
@@ -65,9 +67,11 @@ export default function NewOrderScreen() {
           renderItem={({ item }) => (
             <Chip
               selected={selectedCategory === item.id}
-              onPress={() => setSelectedCategory(
-                selectedCategory === item.id ? null : item.id
-              )}
+              onPress={() =>
+                setSelectedCategory(
+                  selectedCategory === item.id ? null : item.id,
+                )
+              }
               style={styles.categoryChip}
             >
               {item.icon} {item.name}
@@ -79,7 +83,9 @@ export default function NewOrderScreen() {
 
       <FlatList
         data={products?.filter((p: any) =>
-          searchQuery ? p.name.toLowerCase().includes(searchQuery.toLowerCase()) : true
+          searchQuery
+            ? p.name.toLowerCase().includes(searchQuery.toLowerCase())
+            : true,
         )}
         keyExtractor={(item) => item.id}
         numColumns={2}
@@ -121,13 +127,13 @@ export default function NewOrderScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
   },
   search: {
     padding: 16,
   },
   searchbar: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: "#2a2a2a",
   },
   categories: {
     paddingHorizontal: 16,
@@ -144,20 +150,20 @@ const styles = StyleSheet.create({
     margin: 8,
   },
   card: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: "#2a2a2a",
   },
   price: {
-    color: '#ff6b00',
-    fontWeight: 'bold',
+    color: "#ff6b00",
+    fontWeight: "bold",
     marginTop: 8,
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 16,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: "#2a2a2a",
     borderTopWidth: 1,
-    borderTopColor: '#3a3a3a',
+    borderTopColor: "#3a3a3a",
   },
 });

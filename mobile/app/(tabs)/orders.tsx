@@ -1,11 +1,15 @@
-import { View, FlatList, StyleSheet } from 'react-native';
-import { Text, Card, Chip, Button } from 'react-native-paper';
-import { useQuery } from '@tanstack/react-query';
-import { ordersApi } from '../services/api';
+import { View, FlatList, StyleSheet } from "react-native";
+import { Text, Card, Chip, Button } from "react-native-paper";
+import { useQuery } from "@tanstack/react-query";
+import { ordersApi } from "../services/api";
 
 export default function OrdersScreen() {
-  const { data: orders, isLoading, refetch } = useQuery({
-    queryKey: ['orders'],
+  const {
+    data: orders,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["orders"],
     queryFn: async () => {
       const response = await ordersApi.getAll();
       return response.data;
@@ -15,21 +19,31 @@ export default function OrdersScreen() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PENDING': return '#ff9800';
-      case 'PREPARING': return '#2196f3';
-      case 'READY': return '#4caf50';
-      case 'DELIVERED': return '#9e9e9e';
-      default: return '#666';
+      case "PENDING":
+        return "#ff9800";
+      case "PREPARING":
+        return "#2196f3";
+      case "READY":
+        return "#4caf50";
+      case "DELIVERED":
+        return "#9e9e9e";
+      default:
+        return "#666";
     }
   };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'PENDING': return 'Pendente';
-      case 'PREPARING': return 'Preparando';
-      case 'READY': return 'Pronto';
-      case 'DELIVERED': return 'Entregue';
-      default: return status;
+      case "PENDING":
+        return "Pendente";
+      case "PREPARING":
+        return "Preparando";
+      case "READY":
+        return "Pronto";
+      case "DELIVERED":
+        return "Entregue";
+      default:
+        return status;
     }
   };
 
@@ -54,18 +68,18 @@ export default function OrdersScreen() {
             <Card.Content>
               <View style={styles.header}>
                 <Text variant="titleMedium">
-                  Mesa {item.comanda?.table?.number || 'S/N'}
+                  Mesa {item.comanda?.table?.number || "S/N"}
                 </Text>
                 <Chip
                   style={{ backgroundColor: getStatusColor(item.status) }}
-                  textStyle={{ color: '#fff' }}
+                  textStyle={{ color: "#fff" }}
                 >
                   {getStatusLabel(item.status)}
                 </Chip>
               </View>
 
               <Text variant="bodySmall" style={styles.time}>
-                {new Date(item.createdAt).toLocaleTimeString('pt-BR')}
+                {new Date(item.createdAt).toLocaleTimeString("pt-BR")}
               </Text>
 
               <View style={styles.items}>
@@ -73,7 +87,10 @@ export default function OrdersScreen() {
                   <Text key={orderItem.id} variant="bodyMedium">
                     {orderItem.quantity}x {orderItem.product.name}
                     {orderItem.observations && (
-                      <Text style={styles.obs}> ({orderItem.observations})</Text>
+                      <Text style={styles.obs}>
+                        {" "}
+                        ({orderItem.observations})
+                      </Text>
                     )}
                   </Text>
                 ))}
@@ -94,35 +111,35 @@ export default function OrdersScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
   },
   center: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   list: {
     padding: 16,
   },
   card: {
     marginBottom: 12,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: "#2a2a2a",
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
   },
   time: {
-    color: '#999',
+    color: "#999",
     marginBottom: 12,
   },
   items: {
     gap: 4,
   },
   obs: {
-    color: '#999',
-    fontStyle: 'italic',
+    color: "#999",
+    fontStyle: "italic",
   },
 });

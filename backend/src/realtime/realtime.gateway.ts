@@ -4,15 +4,17 @@ import {
   SubscribeMessage,
   OnGatewayConnection,
   OnGatewayDisconnect,
-} from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+} from "@nestjs/websockets";
+import { Server, Socket } from "socket.io";
 
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: "*",
   },
 })
-export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class RealtimeGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 
@@ -24,7 +26,7 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
     console.log(`Client disconnected: ${client.id}`);
   }
 
-  @SubscribeMessage('join-establishment')
+  @SubscribeMessage("join-establishment")
   handleJoinEstablishment(client: Socket, establishmentId: string) {
     client.join(`establishment:${establishmentId}`);
     console.log(`Client ${client.id} joined establishment ${establishmentId}`);
@@ -32,16 +34,20 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   // Broadcast new order to kitchen
   broadcastNewOrder(establishmentId: string, order: any) {
-    this.server.to(`establishment:${establishmentId}`).emit('new-order', order);
+    this.server.to(`establishment:${establishmentId}`).emit("new-order", order);
   }
 
   // Broadcast order status update
   broadcastOrderUpdate(establishmentId: string, order: any) {
-    this.server.to(`establishment:${establishmentId}`).emit('order-updated', order);
+    this.server
+      .to(`establishment:${establishmentId}`)
+      .emit("order-updated", order);
   }
 
   // Broadcast comanda update
   broadcastComandaUpdate(establishmentId: string, comanda: any) {
-    this.server.to(`establishment:${establishmentId}`).emit('comanda-updated', comanda);
+    this.server
+      .to(`establishment:${establishmentId}`)
+      .emit("comanda-updated", comanda);
   }
 }

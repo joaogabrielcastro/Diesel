@@ -1,30 +1,30 @@
-import { useState } from 'react';
-import { View, StyleSheet, Image } from 'react-native';
-import { TextInput, Button, Text } from 'react-native-paper';
-import { useRouter } from 'expo-router';
-import { authApi } from './services/api';
-import { useAuthStore } from './store/auth';
+import { useState } from "react";
+import { View, StyleSheet, Image } from "react-native";
+import { TextInput, Button, Text } from "react-native-paper";
+import { useRouter } from "expo-router";
+import { authApi } from "./services/api";
+import { useAuthStore } from "./store/auth";
 
 export default function LoginScreen() {
   const router = useRouter();
   const { setAuth } = useAuthStore();
-  const [email, setEmail] = useState('garcom@demo.com');
-  const [password, setPassword] = useState('123456');
+  const [email, setEmail] = useState("garcom@demo.com");
+  const [password, setPassword] = useState("123456");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleLogin = async () => {
     try {
       setLoading(true);
-      setError('');
-      
+      setError("");
+
       const response = await authApi.login(email, password);
       const { access_token, user } = response.data;
-      
+
       await setAuth(access_token, user);
-      router.replace('/(tabs)/orders');
+      router.replace("/(tabs)/orders");
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao fazer login');
+      setError(err.response?.data?.message || "Erro ao fazer login");
     } finally {
       setLoading(false);
     }
@@ -59,9 +59,7 @@ export default function LoginScreen() {
           mode="outlined"
         />
 
-        {error ? (
-          <Text style={styles.error}>{error}</Text>
-        ) : null}
+        {error ? <Text style={styles.error}>{error}</Text> : null}
 
         <Button
           mode="contained"
@@ -84,23 +82,23 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 24,
   },
   title: {
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 8,
-    color: '#ff6b00',
-    fontWeight: 'bold',
+    color: "#ff6b00",
+    fontWeight: "bold",
   },
   subtitle: {
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 48,
-    color: '#999',
+    color: "#999",
   },
   input: {
     marginBottom: 16,
@@ -110,13 +108,13 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   error: {
-    color: '#ff4444',
-    textAlign: 'center',
+    color: "#ff4444",
+    textAlign: "center",
     marginTop: 8,
   },
   demo: {
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 24,
-    color: '#666',
+    color: "#666",
   },
 });

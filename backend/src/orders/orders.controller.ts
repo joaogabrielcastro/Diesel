@@ -8,12 +8,12 @@ import {
   Query,
   UseGuards,
   Request,
-} from '@nestjs/common';
-import { OrdersService } from './orders.service';
-import { CreateOrderDto, UpdateOrderStatusDto } from './dto/order.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+} from "@nestjs/common";
+import { OrdersService } from "./orders.service";
+import { CreateOrderDto, UpdateOrderStatusDto } from "./dto/order.dto";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 
-@Controller('orders')
+@Controller("orders")
 @UseGuards(JwtAuthGuard)
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
@@ -28,24 +28,24 @@ export class OrdersController {
   }
 
   @Get()
-  findAll(@Request() req, @Query('status') status?: string) {
+  findAll(@Request() req, @Query("status") status?: string) {
     return this.ordersService.findAll(req.user.establishmentId, status);
   }
 
-  @Get('kitchen')
+  @Get("kitchen")
   getKitchenOrders(@Request() req) {
     return this.ordersService.getKitchenOrders(req.user.establishmentId);
   }
 
-  @Get(':id')
-  findOne(@Request() req, @Param('id') id: string) {
+  @Get(":id")
+  findOne(@Request() req, @Param("id") id: string) {
     return this.ordersService.findOne(id, req.user.establishmentId);
   }
 
-  @Patch(':id/status')
+  @Patch(":id/status")
   updateStatus(
     @Request() req,
-    @Param('id') id: string,
+    @Param("id") id: string,
     @Body() updateOrderStatusDto: UpdateOrderStatusDto,
   ) {
     return this.ordersService.updateStatus(

@@ -1,7 +1,7 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../prisma/prisma.service';
-import * as bcrypt from 'bcryptjs';
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { PrismaService } from "../prisma/prisma.service";
+import * as bcrypt from "bcryptjs";
 
 @Injectable()
 export class AuthService {
@@ -17,17 +17,17 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('Credenciais inválidas');
+      throw new UnauthorizedException("Credenciais inválidas");
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    
+
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Credenciais inválidas');
+      throw new UnauthorizedException("Credenciais inválidas");
     }
 
     if (!user.active) {
-      throw new UnauthorizedException('Usuário inativo');
+      throw new UnauthorizedException("Usuário inativo");
     }
 
     const { password: _, ...result } = user;
@@ -68,14 +68,14 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new UnauthorizedException('Email já cadastrado');
+      throw new UnauthorizedException("Email já cadastrado");
     }
 
     // Get default plan
     let planId = data.planId;
     if (!planId) {
       const defaultPlan = await this.prisma.plan.findFirst({
-        where: { name: 'STARTER' },
+        where: { name: "STARTER" },
       });
       planId = defaultPlan?.id;
     }
@@ -90,7 +90,7 @@ export class AuthService {
           name: data.establishmentName,
           email: data.email,
           planId: planId!,
-          status: 'TRIAL',
+          status: "TRIAL",
         },
       });
 
@@ -99,7 +99,7 @@ export class AuthService {
           name: data.name,
           email: data.email,
           password: hashedPassword,
-          role: 'ADMIN',
+          role: "ADMIN",
           establishmentId: establishment.id,
         },
         include: {

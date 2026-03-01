@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class TablesService {
@@ -10,10 +10,10 @@ export class TablesService {
       where: { establishmentId },
       include: {
         comandas: {
-          where: { status: 'OPEN' },
+          where: { status: "OPEN" },
         },
       },
-      orderBy: { number: 'asc' },
+      orderBy: { number: "asc" },
     });
   }
 

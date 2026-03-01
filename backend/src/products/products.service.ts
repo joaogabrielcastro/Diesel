@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { CreateProductDto, UpdateProductDto } from "./dto/product.dto";
 
 @Injectable()
 export class ProductsService {
@@ -34,7 +34,7 @@ export class ProductsService {
         },
       },
       orderBy: {
-        name: 'asc',
+        name: "asc",
       },
     });
   }
@@ -56,13 +56,17 @@ export class ProductsService {
     });
 
     if (!product) {
-      throw new NotFoundException('Product not found');
+      throw new NotFoundException("Product not found");
     }
 
     return product;
   }
 
-  async update(id: string, establishmentId: string, updateProductDto: UpdateProductDto) {
+  async update(
+    id: string,
+    establishmentId: string,
+    updateProductDto: UpdateProductDto,
+  ) {
     const product = await this.prisma.product.findFirst({
       where: {
         id,
@@ -71,7 +75,7 @@ export class ProductsService {
     });
 
     if (!product) {
-      throw new NotFoundException('Product not found');
+      throw new NotFoundException("Product not found");
     }
 
     return this.prisma.product.update({
@@ -92,7 +96,7 @@ export class ProductsService {
     });
 
     if (!product) {
-      throw new NotFoundException('Product not found');
+      throw new NotFoundException("Product not found");
     }
 
     // Soft delete
@@ -108,9 +112,9 @@ export class ProductsService {
         establishmentId,
         active: true,
         OR: [
-          { name: { contains: query, mode: 'insensitive' } },
-          { code: { contains: query, mode: 'insensitive' } },
-          { description: { contains: query, mode: 'insensitive' } },
+          { name: { contains: query, mode: "insensitive" } },
+          { code: { contains: query, mode: "insensitive" } },
+          { description: { contains: query, mode: "insensitive" } },
         ],
       },
       include: {

@@ -1,16 +1,16 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useAuthStore } from './store/auth'
-import Login from './pages/Login'
-import Dashboard from './pages/Dashboard'
-import Kitchen from './pages/Kitchen'
-import Products from './pages/Products'
-import Tables from './pages/Tables'
-import Reports from './pages/Reports'
-import Layout from './components/Layout'
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useAuthStore } from "./store/auth";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Kitchen from "./pages/Kitchen";
+import Products from "./pages/Products";
+import Tables from "./pages/Tables";
+import Reports from "./pages/Reports";
+import Layout from "./components/Layout";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { token } = useAuthStore()
-  return token ? <>{children}</> : <Navigate to="/login" />
+  const { token } = useAuthStore();
+  return token ? <>{children}</> : <Navigate to="/login" />;
 }
 
 function App() {
@@ -34,7 +34,7 @@ function App() {
         </Route>
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
+export default App;

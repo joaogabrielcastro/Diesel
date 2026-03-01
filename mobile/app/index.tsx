@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
-import { useRouter } from 'expo-router';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { useAuthStore } from './store/auth';
+import { useEffect } from "react";
+import { useRouter } from "expo-router";
+import { View, ActivityIndicator, StyleSheet } from "react-native";
+import { useAuthStore } from "./store/auth";
 
 export default function Index() {
   const router = useRouter();
@@ -9,9 +9,9 @@ export default function Index() {
 
   useEffect(() => {
     if (token) {
-      router.replace('/(tabs)/orders');
+      router.replace("/(tabs)/orders");
     } else {
-      router.replace('/login');
+      router.replace("/login");
     }
   }, [token]);
 
@@ -25,8 +25,8 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#1a1a1a",
   },
 });

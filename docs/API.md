@@ -5,9 +5,11 @@ Base URL: `http://localhost:3000/api`
 ## Authentication
 
 ### POST /auth/login
+
 Login de usuário
 
 **Request:**
+
 ```json
 {
   "email": "admin@demo.com",
@@ -16,6 +18,7 @@ Login de usuário
 ```
 
 **Response:**
+
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -30,9 +33,11 @@ Login de usuário
 ```
 
 ### POST /auth/register
+
 Registrar novo estabelecimento
 
 **Request:**
+
 ```json
 {
   "name": "João Silva",
@@ -45,16 +50,21 @@ Registrar novo estabelecimento
 ## Orders
 
 ### GET /orders
+
 Listar todos os pedidos
+
 - Query params: `?status=PENDING`
 
 ### GET /orders/kitchen
+
 Pedidos para cozinha (PENDING e PREPARING)
 
 ### POST /orders
+
 Criar novo pedido
 
 **Request:**
+
 ```json
 {
   "comandaId": "uuid",
@@ -70,9 +80,11 @@ Criar novo pedido
 ```
 
 ### PATCH /orders/:id/status
+
 Atualizar status do pedido
 
 **Request:**
+
 ```json
 {
   "status": "PREPARING"
@@ -82,21 +94,26 @@ Atualizar status do pedido
 ## Products
 
 ### GET /products
+
 Listar produtos
+
 - Query params: `?categoryId=uuid`
 
 ### GET /products/search?q=cerveja
+
 Buscar produtos
 
 ### POST /products
+
 Criar produto
 
 **Request:**
+
 ```json
 {
   "categoryId": "uuid",
   "name": "Heineken",
-  "price": 12.00,
+  "price": 12.0,
   "code": "001",
   "description": "Cerveja premium",
   "preparationTime": 5
@@ -106,35 +123,45 @@ Criar produto
 ## Categories
 
 ### GET /categories
+
 Listar categorias
 
 ### POST /categories
+
 Criar categoria
 
 ## Tables
 
 ### GET /tables
+
 Listar mesas
 
 ### POST /tables
+
 Criar mesa
 
 ### PATCH /tables/:id/status
+
 Atualizar status da mesa
 
 ## Comandas
 
 ### GET /comandas
+
 Listar comandas
+
 - Query params: `?status=OPEN`
 
 ### GET /comandas/:id
+
 Detalhes da comanda
 
 ### POST /comandas
+
 Criar comanda
 
 **Request:**
+
 ```json
 {
   "tableId": "uuid",
@@ -143,16 +170,19 @@ Criar comanda
 ```
 
 ### PATCH /comandas/:id/close
+
 Fechar comanda
 
 ## WebSocket Events
 
 **Connect:**
+
 ```javascript
-socket.emit('join-establishment', establishmentId)
+socket.emit("join-establishment", establishmentId);
 ```
 
 **Events:**
+
 - `new-order` - Novo pedido criado
 - `order-updated` - Status do pedido atualizado
 - `comanda-updated` - Comanda atualizada
@@ -170,6 +200,7 @@ socket.emit('join-establishment', establishmentId)
 ## Headers
 
 Todas as requisições autenticadas devem incluir:
+
 ```
 Authorization: Bearer <token>
 ```

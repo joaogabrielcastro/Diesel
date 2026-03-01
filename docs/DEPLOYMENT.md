@@ -51,6 +51,7 @@ nano .env
 ```
 
 **.env de Produção:**
+
 ```env
 DATABASE_URL="postgresql://dieselbar:senha_segura@localhost:5432/diesel_bar"
 JWT_SECRET=chave_extremamente_segura_e_aleatoria
@@ -161,7 +162,7 @@ sudo certbot renew --dry-run
 #### docker-compose.yml
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
@@ -321,11 +322,14 @@ docker-compose exec backend npm run prisma:seed
 
 1. **Configurar Apple Developer Account**
 2. **Build**:
+
 ```bash
 cd mobile
 eas build --platform ios
 ```
+
 3. **Submit**:
+
 ```bash
 eas submit --platform ios
 ```
@@ -334,11 +338,14 @@ eas submit --platform ios
 
 1. **Configurar Google Play Console**
 2. **Build**:
+
 ```bash
 cd mobile
 eas build --platform android
 ```
+
 3. **Submit**:
+
 ```bash
 eas submit --platform android
 ```
@@ -412,6 +419,7 @@ crontab -e
 ## Troubleshooting
 
 ### Backend não inicia
+
 ```bash
 # Ver logs
 pm2 logs diesel-api --lines 100
@@ -424,6 +432,7 @@ sudo lsof -i :3000
 ```
 
 ### Erro de conexão com banco
+
 ```bash
 # Verificar se PostgreSQL está rodando
 sudo systemctl status postgresql
@@ -433,6 +442,7 @@ psql -U dieselbar -d diesel_bar
 ```
 
 ### SSL não funciona
+
 ```bash
 # Renovar certificados
 sudo certbot renew

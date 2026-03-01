@@ -38,6 +38,7 @@ O Diesel Bar é uma aplicação SaaS multi-tenant para gestão de bares, restaur
 ### 1. Backend API (NestJS)
 
 **Responsabilidades:**
+
 - API REST para todas as operações
 - WebSocket para atualizações em tempo real
 - Autenticação e autorização (JWT)
@@ -46,6 +47,7 @@ O Diesel Bar é uma aplicação SaaS multi-tenant para gestão de bares, restaur
 - Integração com serviços externos
 
 **Tecnologias:**
+
 - NestJS (Framework Node.js)
 - TypeScript
 - Prisma ORM
@@ -54,6 +56,7 @@ O Diesel Bar é uma aplicação SaaS multi-tenant para gestão de bares, restaur
 - Bull para filas
 
 **Módulos:**
+
 - `auth` - Autenticação e autorização
 - `users` - Gestão de usuários
 - `establishments` - Multi-tenant
@@ -69,6 +72,7 @@ O Diesel Bar é uma aplicação SaaS multi-tenant para gestão de bares, restaur
 ### 2. Mobile App (React Native + Expo)
 
 **Responsabilidades:**
+
 - Interface para garçons
 - Criar e gerenciar pedidos
 - Consultar produtos
@@ -76,6 +80,7 @@ O Diesel Bar é uma aplicação SaaS multi-tenant para gestão de bares, restaur
 - Modo offline com sincronização
 
 **Tecnologias:**
+
 - React Native 0.73
 - Expo Router
 - TanStack Query (cache e sincronização)
@@ -84,6 +89,7 @@ O Diesel Bar é uma aplicação SaaS multi-tenant para gestão de bares, restaur
 - Socket.io client
 
 **Telas Principais:**
+
 - Login
 - Lista de pedidos
 - Novo pedido (busca de produtos)
@@ -93,6 +99,7 @@ O Diesel Bar é uma aplicação SaaS multi-tenant para gestão de bares, restaur
 ### 3. Web Dashboard (React + Vite)
 
 **Responsabilidades:**
+
 - Painel administrativo
 - Dashboard com métricas
 - Painel da cozinha (KDS)
@@ -102,6 +109,7 @@ O Diesel Bar é uma aplicação SaaS multi-tenant para gestão de bares, restaur
 - Configurações do sistema
 
 **Tecnologias:**
+
 - React 18
 - Vite
 - TypeScript
@@ -111,6 +119,7 @@ O Diesel Bar é uma aplicação SaaS multi-tenant para gestão de bares, restaur
 - Socket.io client
 
 **Páginas:**
+
 - Dashboard (visão geral)
 - Cozinha (KDS)
 - Produtos
@@ -123,11 +132,13 @@ O Diesel Bar é uma aplicação SaaS multi-tenant para gestão de bares, restaur
 ### PostgreSQL (Principal)
 
 **Modelo Multi-Tenant:**
+
 - Cada estabelecimento tem seu próprio `establishmentId`
 - Isolamento lógico de dados
 - Row-level security
 
 **Principais Tabelas:**
+
 - `establishments` - Estabelecimentos
 - `plans` - Planos de assinatura
 - `users` - Usuários do sistema
@@ -144,6 +155,7 @@ O Diesel Bar é uma aplicação SaaS multi-tenant para gestão de bares, restaur
 ### Redis (Cache e Sessões)
 
 **Uso:**
+
 - Cache de produtos e categorias
 - Sessões de usuário
 - Rate limiting
@@ -199,21 +211,25 @@ O Diesel Bar é uma aplicação SaaS multi-tenant para gestão de bares, restaur
 ## Segurança
 
 ### Autenticação
+
 - JWT com expiração de 7 dias
 - Senha hasheada com bcrypt (10 rounds)
 - Refresh token (futuro)
 
 ### Autorização
+
 - Role-based access control (ADMIN, WAITER, KITCHEN, CASHIER, CASINO)
 - Guards do NestJS
 - Verificação de estabelecimento em todas as queries
 
 ### Validação
+
 - DTOs com class-validator
 - Sanitização de inputs
 - Rate limiting (100 req/min)
 
 ### Multi-Tenant
+
 - Filtro automático por establishmentId
 - Isolamento de dados
 - Impossível acessar dados de outro estabelecimento
@@ -223,12 +239,14 @@ O Diesel Bar é uma aplicação SaaS multi-tenant para gestão de bares, restaur
 ### Horizontal Scaling
 
 **Backend:**
+
 - Load balancer (nginx/ALB)
 - Múltiplas instâncias do backend
 - Sticky sessions para WebSocket
 - Redis cluster para compartilhar sessões
 
 **Banco de Dados:**
+
 - Read replicas para queries pesadas
 - Connection pooling
 - Índices otimizados
@@ -237,11 +255,13 @@ O Diesel Bar é uma aplicação SaaS multi-tenant para gestão de bares, restaur
 ### Cache Strategy
 
 **Níveis:**
+
 1. Client-side (TanStack Query - 5min)
 2. Redis (produtos, categorias - 1h)
 3. PostgreSQL (query cache)
 
 **Invalidação:**
+
 - Manual após mutations
 - TTL automático
 - WebSocket events
@@ -249,6 +269,7 @@ O Diesel Bar é uma aplicação SaaS multi-tenant para gestão de bares, restaur
 ### Performance
 
 **Otimizações:**
+
 - Lazy loading de imagens
 - Pagination em listas grandes
 - Debounce em buscas
@@ -259,12 +280,14 @@ O Diesel Bar é uma aplicação SaaS multi-tenant para gestão de bares, restaur
 ## Monitoramento e Logs
 
 **Ferramentas Recomendadas:**
+
 - Sentry (error tracking)
 - Datadog/Grafana (metrics)
 - Winston (logs estruturados)
 - PostgreSQL slow query log
 
 **Métricas Importantes:**
+
 - Request rate e latência
 - Error rate
 - Database connections
@@ -275,6 +298,7 @@ O Diesel Bar é uma aplicação SaaS multi-tenant para gestão de bares, restaur
 ## Backup e Recovery
 
 **Estratégia:**
+
 - Backup diário do PostgreSQL
 - Retenção de 30 dias
 - Backup incremental a cada 4h
@@ -284,18 +308,21 @@ O Diesel Bar é uma aplicação SaaS multi-tenant para gestão de bares, restaur
 ## Roadmap Técnico
 
 **Curto Prazo (3 meses):**
+
 - [ ] Testes automatizados (80% coverage)
 - [ ] CI/CD pipeline
 - [ ] Monitoring e alertas
 - [ ] Docker compose para dev
 
 **Médio Prazo (6 meses):**
+
 - [ ] Migração para microserviços
 - [ ] GraphQL API
 - [ ] Elastic Search para buscas
 - [ ] Queue para impressão
 
 **Longo Prazo (12 meses):**
+
 - [ ] Kubernetes para orquestração
 - [ ] Multi-region deployment
 - [ ] Event sourcing

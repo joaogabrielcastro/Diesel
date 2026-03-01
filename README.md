@@ -5,6 +5,7 @@ Sistema completo de gestão para bares, restaurantes e casas noturnas com foco e
 ## 🚀 Tecnologias
 
 ### Backend
+
 - Node.js 20+ com NestJS
 - TypeScript
 - PostgreSQL + Prisma ORM
@@ -14,6 +15,7 @@ Sistema completo de gestão para bares, restaurantes e casas noturnas com foco e
 - JWT para autenticação
 
 ### Mobile (Garçom/Cassino)
+
 - React Native + Expo
 - TypeScript
 - TanStack Query
@@ -21,6 +23,7 @@ Sistema completo de gestão para bares, restaurantes e casas noturnas com foco e
 - Socket.io client
 
 ### Web Admin
+
 - React 18 + Vite
 - TypeScript
 - TanStack Query + Table
@@ -41,6 +44,7 @@ diesel-bar/
 ## 🏁 Quick Start
 
 ### Requisitos
+
 - Node.js 20+
 - PostgreSQL 15+
 - Redis 7+

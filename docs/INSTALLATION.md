@@ -109,16 +109,19 @@ Use o app Expo Go no seu celular para escanear o QR Code.
 Após executar o seed, você terá acesso com:
 
 **Admin:**
+
 - Email: `admin@demo.com`
 - Senha: `123456`
 
 **Garçom:**
+
 - Email: `garcom@demo.com`
 - Senha: `123456`
 
 ## Comandos Úteis
 
 ### Backend
+
 ```bash
 npm run start:dev      # Inicia em modo desenvolvimento
 npm run build          # Build para produção
@@ -129,6 +132,7 @@ npm run prisma:studio  # Interface visual do banco
 ```
 
 ### Web
+
 ```bash
 npm run dev            # Inicia em desenvolvimento
 npm run build          # Build para produção
@@ -136,6 +140,7 @@ npm run preview        # Preview do build
 ```
 
 ### Mobile
+
 ```bash
 npx expo start         # Inicia Expo
 npx expo start --android   # Abre no Android
@@ -145,22 +150,26 @@ npx expo start --ios       # Abre no iOS
 ## Troubleshooting
 
 ### Erro de conexão com PostgreSQL
+
 - Verifique se o PostgreSQL está rodando
 - Confirme a DATABASE_URL no .env
 - Teste a conexão: `psql -U postgres -d diesel_bar`
 
 ### Erro ao rodar migrations
+
 ```bash
 # Resete o banco (CUIDADO: apaga todos os dados)
 npx prisma migrate reset
 ```
 
 ### Erro no mobile - Network Request Failed
+
 - Atualize a URL da API no arquivo `mobile/app/services/api.ts`
 - Use o IP da sua máquina ao invés de localhost
 - Exemplo: `http://192.168.1.100:3000/api`
 
 ### Porta já em uso
+
 ```bash
 # Mate o processo na porta 3000
 lsof -ti:3000 | xargs kill -9
@@ -180,6 +189,7 @@ PORT=3001
 ## Suporte
 
 Para problemas ou dúvidas:
+
 - Abra uma issue no GitHub
 - Email: suporte@dieselbar.com
 - Documentação: /docs

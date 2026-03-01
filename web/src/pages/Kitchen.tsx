@@ -1,32 +1,32 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ordersApi } from '../services/api'
-import { Clock } from 'lucide-react'
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ordersApi } from "../services/api";
+import { Clock } from "lucide-react";
 
 export default function Kitchen() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const { data: orders } = useQuery({
-    queryKey: ['kitchen-orders'],
+    queryKey: ["kitchen-orders"],
     queryFn: async () => {
-      const response = await ordersApi.getKitchen()
-      return response.data
+      const response = await ordersApi.getKitchen();
+      return response.data;
     },
     refetchInterval: 3000,
-  })
+  });
 
   const updateStatus = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
       ordersApi.updateStatus(id, status),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['kitchen-orders'] })
+      queryClient.invalidateQueries({ queryKey: ["kitchen-orders"] });
     },
-  })
+  });
 
   const getTimeSince = (date: string) => {
-    const diff = Date.now() - new Date(date).getTime()
-    const minutes = Math.floor(diff / 60000)
-    return `${minutes}min`
-  }
+    const diff = Date.now() - new Date(date).getTime();
+    const minutes = Math.floor(diff / 60000);
+    return `${minutes}min`;
+  };
 
   return (
     <div className="p-8">
@@ -37,7 +37,7 @@ export default function Kitchen() {
           <div key={order.id} className="card border-l-4 border-primary">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold">
-                Mesa {order.comanda?.table?.number || 'Cassino'}
+                Mesa {order.comanda?.table?.number || "Cassino"}
               </h3>
               <div className="flex items-center gap-2 text-gray-400">
                 <Clock size={16} />
@@ -67,17 +67,21 @@ export default function Kitchen() {
             )}
 
             <div className="flex gap-2">
-              {order.status === 'PENDING' && (
+              {order.status === "PENDING" && (
                 <button
-                  onClick={() => updateStatus.mutate({ id: order.id, status: 'PREPARING' })}
+                  onClick={() =>
+                    updateStatus.mutate({ id: order.id, status: "PREPARING" })
+                  }
                   className="btn btn-primary flex-1"
                 >
                   Iniciar Preparo
                 </button>
               )}
-              {order.status === 'PREPARING' && (
+              {order.status === "PREPARING" && (
                 <button
-                  onClick={() => updateStatus.mutate({ id: order.id, status: 'READY' })}
+                  onClick={() =>
+                    updateStatus.mutate({ id: order.id, status: "READY" })
+                  }
                   className="btn bg-green-600 hover:bg-green-700 text-white flex-1"
                 >
                   Marcar como Pronto
@@ -94,5 +98,5 @@ export default function Kitchen() {
         )}
       </div>
     </div>
-  )
+  );
 }

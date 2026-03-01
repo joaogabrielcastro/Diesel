@@ -1,23 +1,23 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom'
-import { Home, ChefHat, Package, Table, BarChart, LogOut } from 'lucide-react'
-import { useAuthStore } from '../store/auth'
+import { Outlet, Link, useNavigate } from "react-router-dom";
+import { Home, ChefHat, Package, Table, BarChart, LogOut } from "lucide-react";
+import { useAuthStore } from "../store/auth";
 
 export default function Layout() {
-  const navigate = useNavigate()
-  const { user, logout } = useAuthStore()
+  const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
 
   const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
+    logout();
+    navigate("/login");
+  };
 
   const navItems = [
-    { to: '/', icon: Home, label: 'Dashboard' },
-    { to: '/kitchen', icon: ChefHat, label: 'Cozinha' },
-    { to: '/products', icon: Package, label: 'Produtos' },
-    { to: '/tables', icon: Table, label: 'Mesas' },
-    { to: '/reports', icon: BarChart, label: 'Relatórios' },
-  ]
+    { to: "/", icon: Home, label: "Dashboard" },
+    { to: "/kitchen", icon: ChefHat, label: "Cozinha" },
+    { to: "/products", icon: Package, label: "Produtos" },
+    { to: "/tables", icon: Table, label: "Mesas" },
+    { to: "/reports", icon: BarChart, label: "Relatórios" },
+  ];
 
   return (
     <div className="flex h-screen">
@@ -62,5 +62,5 @@ export default function Layout() {
         <Outlet />
       </main>
     </div>
-  )
+  );
 }

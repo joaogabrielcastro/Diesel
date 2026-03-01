@@ -3,6 +3,7 @@
 ## 📦 O que foi criado
 
 ### ✅ Backend (NestJS + PostgreSQL)
+
 - API REST completa com autenticação JWT
 - Sistema de pedidos em tempo real (WebSocket)
 - Controle de estoque automatizado
@@ -10,6 +11,7 @@
 - 12 módulos funcionais completos
 
 **Principais features:**
+
 - Autenticação e autorização
 - Gestão de pedidos
 - Controle de mesas e comandas
@@ -20,6 +22,7 @@
 - Relatórios
 
 ### ✅ Mobile App (React Native + Expo)
+
 - Interface para garçons
 - Busca rápida de produtos
 - Criação de pedidos intuitiva
@@ -28,12 +31,14 @@
 - Design mobile-first dark mode
 
 **Telas:**
+
 - Login
 - Lista de pedidos
 - Novo pedido
 - Perfil
 
 ### ✅ Web Dashboard (React + Vite)
+
 - Painel administrativo completo
 - Dashboard com métricas
 - Painel da cozinha (KDS)
@@ -42,6 +47,7 @@
 - Relatórios (estrutura)
 
 **Páginas:**
+
 - Dashboard com estatísticas
 - Cozinha (atualização em 3s)
 - Produtos
@@ -49,6 +55,7 @@
 - Relatórios
 
 ### ✅ Documentação Completa
+
 - Guia de instalação
 - Arquitetura do sistema
 - Guia de deployment
@@ -85,6 +92,7 @@ notepad .env
 ```
 
 **Mínimo necessário no .env:**
+
 ```env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/diesel_bar"
 JWT_SECRET=sua-chave-super-secreta-aqui
@@ -93,6 +101,7 @@ JWT_SECRET=sua-chave-super-secreta-aqui
 ### 3. Subir PostgreSQL
 
 **Opção A - Docker:**
+
 ```powershell
 docker run --name diesel-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=diesel_bar -p 5432:5432 -d postgres:15
 ```
@@ -147,10 +156,12 @@ npx expo start
 Após executar o seed:
 
 **Admin:**
+
 - Email: `admin@demo.com`
 - Senha: `123456`
 
 **Garçom:**
+
 - Email: `garcom@demo.com`
 - Senha: `123456`
 
@@ -188,6 +199,7 @@ diesel-bar/
 ## 🎯 Próximos Passos
 
 ### Imediato (você pode fazer agora)
+
 1. ✅ Teste o login no web e mobile
 2. ✅ Crie alguns pedidos pelo mobile
 3. ✅ Veja-os aparecer na cozinha (web)
@@ -195,6 +207,7 @@ diesel-bar/
 5. ✅ Explore o dashboard
 
 ### Desenvolvimento
+
 - [ ] Adicionar mais produtos e categorias
 - [ ] Implementar sistema de pagamentos
 - [ ] Criar mais relatórios
@@ -203,6 +216,7 @@ diesel-bar/
 - [ ] Adicionar testes automatizados
 
 ### Produção
+
 - [ ] Configurar domínio
 - [ ] Deploy do backend (Railway/Render)
 - [ ] Deploy do web (Vercel/Netlify)
@@ -239,12 +253,14 @@ npm install
 ## 🐛 Problemas Comuns
 
 ### "Cannot find module '@prisma/client'"
+
 ```powershell
 cd backend
 npx prisma generate
 ```
 
 ### "Port 3000 already in use"
+
 ```powershell
 # Windows
 netstat -ano | findstr :3000
@@ -252,9 +268,11 @@ taskkill /F /PID <PID>
 ```
 
 ### Mobile não conecta com backend
+
 Edite `mobile/app/services/api.ts`:
+
 ```typescript
-const API_URL = 'http://SEU_IP:3000/api'; // Ex: http://192.168.1.100:3000/api
+const API_URL = "http://SEU_IP:3000/api"; // Ex: http://192.168.1.100:3000/api
 ```
 
 ## 💡 Dicas
@@ -268,18 +286,22 @@ const API_URL = 'http://SEU_IP:3000/api'; // Ex: http://192.168.1.100:3000/api
 ## 🎨 Personalização
 
 ### Cores (Mobile)
+
 Edite `mobile/app/_layout.tsx` - propriedade `theme`
 
 ### Cores (Web)
+
 Edite `web/tailwind.config.js` - seção `extend.colors`
 
 ### Logo
+
 - Mobile: `mobile/assets/icon.png`
 - Web: `web/public/` (criar)
 
 ## 📞 Suporte
 
 Se tiver problemas:
+
 1. Verifique os logs do backend
 2. Verifique se PostgreSQL está rodando
 3. Certifique-se que fez o `prisma generate`

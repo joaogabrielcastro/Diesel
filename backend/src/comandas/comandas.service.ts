@@ -1,17 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class ComandasService {
   constructor(private prisma: PrismaService) {}
 
-  async create(establishmentId: string, data: { tableId?: string; customerName?: string }) {
+  async create(
+    establishmentId: string,
+    data: { tableId?: string; customerName?: string },
+  ) {
     const comanda = await this.prisma.comanda.create({
       data: {
         establishmentId,
         tableId: data.tableId,
         customerName: data.customerName,
-        status: 'OPEN',
+        status: "OPEN",
       },
       include: {
         table: true,
@@ -22,7 +25,7 @@ export class ComandasService {
     if (data.tableId) {
       await this.prisma.table.update({
         where: { id: data.tableId },
-        data: { status: 'OCCUPIED' },
+        data: { status: "OCCUPIED" },
       });
     }
 
@@ -48,7 +51,7 @@ export class ComandasService {
         },
       },
       orderBy: {
-        openedAt: 'desc',
+        openedAt: "desc",
       },
     });
   }
@@ -76,7 +79,7 @@ export class ComandasService {
             },
           },
           orderBy: {
-            createdAt: 'desc',
+            createdAt: "desc",
           },
         },
         payments: true,
@@ -84,7 +87,7 @@ export class ComandasService {
     });
 
     if (!comanda) {
-      throw new NotFoundException('Comanda not found');
+      throw new NotFoundException("Comanda not found");
     }
 
     return comanda;
@@ -102,13 +105,13 @@ export class ComandasService {
     });
 
     if (!comanda) {
-      throw new NotFoundException('Comanda not found');
+      throw new NotFoundException("Comanda not found");
     }
 
     const updated = await this.prisma.comanda.update({
       where: { id },
       data: {
-        status: 'CLOSED',
+        status: "CLOSED",
         closedAt: new Date(),
       },
     });
@@ -117,7 +120,7 @@ export class ComandasService {
     if (comanda.tableId) {
       await this.prisma.table.update({
         where: { id: comanda.tableId },
-        data: { status: 'AVAILABLE' },
+        data: { status: "AVAILABLE" },
       });
     }
 

@@ -1,12 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateOrderDto, UpdateOrderStatusDto } from './dto/order.dto';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { CreateOrderDto, UpdateOrderStatusDto } from "./dto/order.dto";
 
 @Injectable()
 export class OrdersService {
   constructor(private prisma: PrismaService) {}
 
-  async create(userId: string, establishmentId: string, createOrderDto: CreateOrderDto) {
+  async create(
+    userId: string,
+    establishmentId: string,
+    createOrderDto: CreateOrderDto,
+  ) {
     const { comandaId, items, observations } = createOrderDto;
 
     // Verify comanda exists and belongs to establishment
@@ -14,16 +18,16 @@ export class OrdersService {
       where: {
         id: comandaId,
         establishmentId,
-        status: 'OPEN',
+        status: "OPEN",
       },
     });
 
     if (!comanda) {
-      throw new NotFoundException('Comanda not found or already closed');
+      throw new NotFoundException("Comanda not found or already closed");
     }
 
     // Get products with prices
-    const productIds = items.map(item => item.productId);
+    const productIds = items.map((item) => item.productId);
     const products = await this.prisma.product.findMany({
       where: {
         id: { in: productIds },
@@ -39,7 +43,7 @@ export class OrdersService {
     });
 
     if (products.length !== productIds.length) {
-      throw new NotFoundException('Some products not found');
+      throw new NotFoundException("Some products not found");
     }
 
     // Create order with items in transaction
@@ -50,10 +54,10 @@ export class OrdersService {
           comandaId,
           userId,
           observations,
-          status: 'PENDING',
+          status: "PENDING",
           items: {
-            create: items.map(item => {
-              const product = products.find(p => p.id === item.productId)!;
+            create: items.map((item) => {
+              const product = products.find((p) => p.id === item.productId)!;
               return {
                 productId: item.productId,
                 quantity: item.quantity,
@@ -80,26 +84,29 @@ export class OrdersService {
 
       // Decrease stock for products with ingredients
       for (const item of items) {
-        const product = products.find(p => p.id === item.productId)!;
+        const product = products.find((p) => p.id === item.productId)!;
         if (product.ingredients.length > 0) {
           for (const ingredient of product.ingredients) {
+            const quantityToDecrement =
+              ingredient.quantity.toNumber() * item.quantity;
             await tx.ingredient.update({
               where: { id: ingredient.ingredientId },
               data: {
                 currentStock: {
-                  decrement: ingredient.quantity * item.quantity,
+                  decrement: quantityToDecrement,
                 },
               },
             });
 
             // Log stock movement
+            const quantityUsed = ingredient.quantity.toNumber() * item.quantity;
             await tx.stockMovement.create({
               data: {
                 establishmentId,
                 ingredientId: ingredient.ingredientId,
                 userId,
-                type: 'OUT',
-                quantity: ingredient.quantity * item.quantity,
+                type: "OUT",
+                quantity: quantityUsed,
                 reason: `Order ${newOrder.id}`,
               },
             });
@@ -112,7 +119,7 @@ export class OrdersService {
         (sum, item) => sum + Number(item.price) * item.quantity,
         0,
       );
-      
+
       await tx.comanda.update({
         where: { id: comandaId },
         data: {
@@ -153,7 +160,7 @@ export class OrdersService {
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
   }
@@ -186,14 +193,14 @@ export class OrdersService {
             },
           },
           orderBy: {
-            changedAt: 'desc',
+            changedAt: "desc",
           },
         },
       },
     });
 
     if (!order) {
-      throw new NotFoundException('Order not found');
+      throw new NotFoundException("Order not found");
     }
 
     return order;
@@ -215,7 +222,7 @@ export class OrdersService {
     });
 
     if (!order) {
-      throw new NotFoundException('Order not found');
+      throw new NotFoundException("Order not found");
     }
 
     const updatedOrder = await this.prisma.$transaction(async (tx) => {
@@ -234,8 +241,8 @@ export class OrdersService {
         where: { id },
         data: {
           status,
-          ...(status === 'PREPARING' && { preparedAt: new Date() }),
-          ...(status === 'DELIVERED' && { deliveredAt: new Date() }),
+          ...(status === "PREPARING" && { preparedAt: new Date() }),
+          ...(status === "DELIVERED" && { deliveredAt: new Date() }),
         },
         include: {
           items: {
@@ -268,7 +275,7 @@ export class OrdersService {
       where: {
         establishmentId,
         status: {
-          in: ['PENDING', 'PREPARING'],
+          in: ["PENDING", "PREPARING"],
         },
       },
       include: {
@@ -288,7 +295,7 @@ export class OrdersService {
         },
       },
       orderBy: {
-        createdAt: 'asc',
+        createdAt: "asc",
       },
     });
   }
