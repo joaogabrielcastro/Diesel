@@ -1,0 +1,31 @@
+{
+  "name": "diesel-bar",
+  "version": "1.0.0",
+  "description": "Sistema SaaS para gestão de bares, restaurantes e casas noturnas",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "mobile",
+    "web"
+  ],
+  "scripts": {
+    "install:all": "npm install && cd backend && npm install && cd ../mobile && npm install && cd ../web && npm install",
+    "dev:backend": "cd backend && npm run start:dev",
+    "dev:mobile": "cd mobile && npx expo start",
+    "dev:web": "cd web && npm run dev",
+    "build:backend": "cd backend && npm run build",
+    "build:web": "cd web && npm run build",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "clean": "rm -rf node_modules backend/node_modules mobile/node_modules web/node_modules"
+  },
+  "keywords": [
+    "saas",
+    "bar",
+    "restaurant",
+    "pos",
+    "management"
+  ],
+  "author": "Diesel Bar Team",
+  "license": "MIT"
+}
