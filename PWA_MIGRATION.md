@@ -3,11 +3,13 @@
 ## Mudanças
 
 ### ❌ Removido
+
 - Pasta `mobile/` completa (React Native + Expo SDK 50)
 - Dependencies do Expo e React Native
 - Scripts `dev:mobile` e referências mobile no root package.json
 
 ### ✅ Adicionado
+
 - **PWA (Progressive Web App)** no projeto web
 - vite-plugin-pwa + workbox-window
 - Manifest.json com configuração completa
@@ -18,11 +20,13 @@
 ## Motivação
 
 **Problema**: Expo SDK 50 incompatível com Expo Go SDK 54
+
 - Atualizar SDK 54 quebraria todas as dependências
 - Manutenção complexa de versões Expo/React Native
 - Build nativo requer EAS Build (pago)
 
 **Solução**: PWA oferece:
+
 - ✅ Instalação em Android/iOS sem app store
 - ✅ Funciona offline com Service Worker
 - ✅ Atualização automática (sem deploy em lojas)
@@ -33,6 +37,7 @@
 ## Funcionalidades PWA
 
 ### 📱 Para Garçons
+
 1. Acessa https://diesel-web.vercel.app no celular
 2. "Adicionar à tela inicial" (Android/iOS)
 3. Ícone aparece como app nativo
@@ -40,11 +45,13 @@
 5. Funciona offline por 24h (cache de API)
 
 ### 🔌 Offline First
+
 - Assets estáticos em cache (JS, CSS, imagens)
 - API com NetworkFirst strategy
 - Sincronização automática ao reconectar
 
 ### ⚡ Performance
+
 - Carregamento instantâneo após instalação
 - Tamanho: ~1MB (vs ~50MB React Native)
 - Atualização em segundos (vs minutos na app store)
@@ -68,6 +75,7 @@ web/
 ## Deploy
 
 ### Vercel (Automático)
+
 ```bash
 git add .
 git commit -m "feat: PWA implementation"
@@ -85,6 +93,7 @@ npm run preview  # http://localhost:4173
 ```
 
 ### DevTools Check
+
 1. Abra `http://localhost:4173`
 2. F12 → Application
 3. Verifique:
@@ -95,50 +104,56 @@ npm run preview  # http://localhost:4173
 ## Instalação Mobile
 
 ### Android (Chrome/Edge)
+
 1. Abra https://diesel-web.vercel.app
 2. Menu (⋮) → "Adicionar à tela inicial"
 3. Confirme instalação
 4. Ícone "Diesel Bar" aparece na home
 
 ### iOS (Safari)
+
 1. Abra https://diesel-web.vercel.app
 2. Compartilhar → "Adicionar à Tela Inicial"
 3. Edite nome se necessário
 4. Adicionar
 
 ### Desktop (Chrome/Edge)
+
 - Ícone de instalação aparece na barra de URL
 - Clique para instalar
 
 ## Comparação
 
-| Feature | React Native | PWA |
-|---------|-------------|-----|
-| Install | App Store | Navegador |
-| Update | Review 3-7 dias | Instantâneo |
-| Offline | ✅ | ✅ |
-| Notificações | ✅ | ✅ (web push) |
-| Câmera/GPS | ✅ | ✅ (Web APIs) |
-| Tamanho | ~50MB | ~1MB |
-| Build Time | 20-30 min | 1-2 min |
-| Manutenção | SDK updates | Simples |
-| Custo Deploy | EAS ($29/mês) | Grátis |
+| Feature      | React Native    | PWA           |
+| ------------ | --------------- | ------------- |
+| Install      | App Store       | Navegador     |
+| Update       | Review 3-7 dias | Instantâneo   |
+| Offline      | ✅              | ✅            |
+| Notificações | ✅              | ✅ (web push) |
+| Câmera/GPS   | ✅              | ✅ (Web APIs) |
+| Tamanho      | ~50MB           | ~1MB          |
+| Build Time   | 20-30 min       | 1-2 min       |
+| Manutenção   | SDK updates     | Simples       |
+| Custo Deploy | EAS ($29/mês)   | Grátis        |
 
 ## Próximos Passos
 
 ### UX Mobile
+
 - [ ] Aumentar tamanho de botões (touch targets 44px)
 - [ ] Layout responsivo otimizado
 - [ ] Gestos touch (swipe, pull-to-refresh)
 - [ ] Bottom navigation bar
 
 ### Offline Avançado
+
 - [ ] IndexedDB para pedidos offline
 - [ ] Background sync queue
 - [ ] Indicador de status de conexão
 - [ ] Conflito resolution (pedidos duplicados)
 
 ### Notificações
+
 - [ ] Web Push Notifications
 - [ ] Service Worker background sync
 - [ ] Alertas de novos pedidos

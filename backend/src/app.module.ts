@@ -1,6 +1,5 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-import { ThrottlerModule } from "@nestjs/throttler";
 import { PrismaModule } from "./prisma/prisma.module";
 import { AuthModule } from "./auth/auth.module";
 import { UsersModule } from "./users/users.module";
@@ -12,7 +11,6 @@ import { CategoriesModule } from "./categories/categories.module";
 import { OrdersModule } from "./orders/orders.module";
 import { StockModule } from "./stock/stock.module";
 import { PaymentsModule } from "./payments/payments.module";
-import { QuickOrdersModule } from "./quick-orders/quick-orders.module";
 import { RealtimeModule } from "./realtime/realtime.module";
 import { ReportsModule } from "./reports/reports.module";
 import { UploadModule } from "./upload/upload.module";
@@ -24,14 +22,6 @@ import { AppController } from "./app.controller";
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-
-    // Rate limiting
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60000,
-        limit: 100,
-      },
-    ]),
 
     // Core modules
     PrismaModule,
@@ -48,7 +38,6 @@ import { AppController } from "./app.controller";
     OrdersModule,
     StockModule,
     PaymentsModule,
-    QuickOrdersModule,
     ReportsModule,
     UploadModule,
   ],

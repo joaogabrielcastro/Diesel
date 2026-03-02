@@ -10,19 +10,18 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   const port = configService.get("PORT") || 3000;
-  const corsOrigin = configService.get("CORS_ORIGIN")?.split(",") || "*";
+  const corsOrigin = configService.get("CORS_ORIGIN") || "*";
 
   // Servir arquivos estáticos (uploads)
   app.useStaticAssets(join(__dirname, "..", "uploads"), {
     prefix: "/uploads/",
   });
 
-  // Global pipes
+  // Global pipes - whitelist remove campos extras, transform converte tipos
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       transform: true,
-      forbidNonWhitelisted: true,
     }),
   );
 

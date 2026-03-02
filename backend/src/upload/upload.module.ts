@@ -4,7 +4,6 @@ import { diskStorage } from "multer";
 import { extname } from "path";
 import { UploadController } from "./upload.controller";
 import { UploadService } from "./upload.service";
-import { PrismaService } from "../prisma/prisma.service";
 
 @Module({
   imports: [
@@ -30,7 +29,7 @@ import { PrismaService } from "../prisma/prisma.service";
     }),
   ],
   controllers: [UploadController],
-  providers: [UploadService, PrismaService],
+  providers: [UploadService],
   exports: [UploadService],
 })
 export class UploadModule {}
