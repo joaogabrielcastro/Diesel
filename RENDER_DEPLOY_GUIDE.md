@@ -6,7 +6,14 @@ O Render estava instalando **Prisma 7.x** (versão beta com breaking changes), m
 
 ## ✅ Solução Implementada
 
-### 1. Versões Fixadas no `package.json`
+### 1. Arquivos de Configuração Criados
+
+✅ `render.yaml` - Configuração automática do Render (RECOMENDADO)  
+✅ `backend/build.sh` - Script de build customizado que força Prisma 5.8.0  
+✅ `backend/.npmrc` - Configurações do NPM  
+✅ `backend/package.json` - Versões fixadas + script prebuild
+
+### 2. Versões Fixadas no `package.json`
 
 ```json
 {
@@ -39,6 +46,42 @@ legacy-peer-deps=true
 
 ---
 
+## 🎯 OPÇÃO 1: Deploy com render.yaml (RECOMENDADO ✨)
+
+O arquivo `render.yaml` na raiz do projeto contém todas as configurações necessárias. O Render detecta e aplica automaticamente.
+
+### Vantagens:
+
+- ✅ Força Node 20.11.0
+- ✅ Instala Prisma 5.8.0 automaticamente
+- ✅ Build command otimizado
+- ✅ Detectado automaticamente pelo Render
+
+### Passos:
+
+1. **Commit e Push:**
+
+```bash
+git add .
+git commit -m "fix: Add Render config with Prisma 5.8.0"
+git push origin main
+```
+
+2. **No Render Dashboard:**
+   - New → Web Service
+   - Conecte seu repositório GitHub
+   - **Render detecta o render.yaml automaticamente**
+   - Configure apenas as variáveis secretas (DATABASE_URL, JWT_SECRET)
+   - Click "Create Web Service"
+
+> 💡 Com render.yaml você NÃO precisa configurar Build/Start commands manualmente!
+
+---
+
+## 🎯 OPÇÃO 2: Configuração Manual (Alternativa)
+
+Se o render.yaml não funcionar, use esta configuração manual:
+
 ## 🔧 Configurações Corretas do Render
 
 ### **1. Criar PostgreSQL Database**
@@ -60,9 +103,19 @@ legacy-peer-deps=true
 
 #### **Build Command:**
 
+**Opção A (usando script):**
+
 ```bash
-npm install --legacy-peer-deps && npx prisma generate && npm run build
+chmod +x build.sh && ./build.sh
 ```
+
+**Opção B (inline):**
+
+```bash
+npm install --legacy-peer-deps && npm install prisma@5.8.0 @prisma/client@5.8.0 --save-exact --legacy-peer-deps && npx prisma generate && npm run build
+```
+
+> ⚠️ **IMPORTANTE:** A segunda linha `npm install prisma@5.8.0...` força a versão correta!
 
 #### **Start Command:**
 

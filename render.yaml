@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: diesel-bar-backend
+    runtime: node
+    plan: free
+    region: ohio
+    rootDir: backend
+
+    buildCommand: |
+      npm install --legacy-peer-deps --no-audit --prefer-offline
+      npm install prisma@5.8.0 @prisma/client@5.8.0 --save-exact --legacy-peer-deps
+      npx prisma generate
+      npm run build
+
+    startCommand: |
+      npx prisma migrate deploy
+      npm run start:prod
+
+    envVars:
+      - key: NODE_VERSION
+        value: 20.11.0
+      - key: NPM_CONFIG_LOGLEVEL
+        value: error
+      - key: NPM_CONFIG_LEGACY_PEER_DEPS
+        value: true
+      - key: NODE_ENV
+        value: production
+
+databases:
+  - name: diesel-db
+    plan: free
+    region: ohio

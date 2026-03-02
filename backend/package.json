@@ -14,6 +14,7 @@
     "@prisma/client": "5.8.0"
   },
   "scripts": {
+    "prebuild": "npm install prisma@5.8.0 @prisma/client@5.8.0 --save-exact --legacy-peer-deps",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
