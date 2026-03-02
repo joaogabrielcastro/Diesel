@@ -16,6 +16,7 @@ import { QuickOrdersModule } from "./quick-orders/quick-orders.module";
 import { RealtimeModule } from "./realtime/realtime.module";
 import { ReportsModule } from "./reports/reports.module";
 import { UploadModule } from "./upload/upload.module";
+import { AppController } from "./app.controller";
 
 @Module({
   imports: [
@@ -51,5 +52,6 @@ import { UploadModule } from "./upload/upload.module";
     ReportsModule,
     UploadModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}
