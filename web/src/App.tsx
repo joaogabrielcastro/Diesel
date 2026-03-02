@@ -15,9 +15,22 @@ import Payments from "./pages/Payments";
 import Settings from "./pages/Settings";
 import Layout from "./components/Layout";
 
-function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { token } = useAuthStore();
-  return token ? <>{children}</> : <Navigate to="/login" />;
+function PrivateRoute({
+  children,
+  roles,
+}: {
+  children: React.ReactNode;
+  roles?: string[];
+}) {
+  const { token, user } = useAuthStore();
+  if (!token) return <Navigate to="/login" />;
+  if (roles && user?.role && !roles.includes(user.role)) {
+    // Redirect to appropriate home based on role
+    if (user.role === "cozinha") return <Navigate to="/kitchen" />;
+    if (user.role === "garcom") return <Navigate to="/tables" />;
+    return <Navigate to="/" />;
+  }
+  return <>{children}</>;
 }
 
 function WebSocketHandler() {
@@ -42,7 +55,7 @@ function App() {
           <Route
             path="/"
             element={
-              <PrivateRoute>
+              <PrivateRoute roles={["admin"]}>
                 <Layout />
               </PrivateRoute>
             }
@@ -55,6 +68,28 @@ function App() {
             <Route path="stock" element={<Stock />} />
             <Route path="payments" element={<Payments />} />
             <Route path="settings" element={<Settings />} />
+          </Route>
+          {/* Garçom */}
+          <Route
+            path="/garcom"
+            element={
+              <PrivateRoute roles={["admin", "garcom"]}>
+                <Layout />
+              </PrivateRoute>
+            }
+          >
+            <Route index element={<Navigate to="/tables" />} />
+          </Route>
+          {/* Cozinha */}
+          <Route
+            path="/cozinha"
+            element={
+              <PrivateRoute roles={["admin", "cozinha"]}>
+                <Layout />
+              </PrivateRoute>
+            }
+          >
+            <Route index element={<Navigate to="/kitchen" />} />
           </Route>
         </Routes>
       </BrowserRouter>

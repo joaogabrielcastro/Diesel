@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useAuthStore } from "../store/auth";
+import { useAuthStore } from "../../store/auth";
 
 // Use backend em produção (Render) - descomente a linha abaixo para testar
 const API_URL = "https://diesel-0i1m.onrender.com/api";

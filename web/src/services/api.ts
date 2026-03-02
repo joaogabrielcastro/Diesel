@@ -21,6 +21,7 @@ export const authApi = {
 export const ordersApi = {
   getAll: () => api.get("/orders"),
   getKitchen: () => api.get("/orders/kitchen"),
+  create: (data: any) => api.post("/orders", data),
   updateStatus: (id: string, status: string) =>
     api.patch(`/orders/${id}/status`, { status }),
 };
@@ -28,17 +29,42 @@ export const ordersApi = {
 export const productsApi = {
   getAll: () => api.get("/products"),
   create: (data: any) => api.post("/products", data),
+  update: (id: string, data: any) => api.patch(`/products/${id}`, data),
   delete: (id: string) => api.delete(`/products/${id}`),
 };
 
 export const tablesApi = {
   getAll: () => api.get("/tables"),
+  create: (data: any) => api.post("/tables", data),
   updateStatus: (id: string, status: string) =>
     api.patch(`/tables/${id}/status`, { status }),
+  delete: (id: string) => api.delete(`/tables/${id}`),
 };
 
 export const categoriesApi = {
   getAll: () => api.get("/categories"),
+  create: (data: any) => api.post("/categories", data),
+  delete: (id: string) => api.delete(`/categories/${id}`),
+};
+
+export const paymentsApi = {
+  getAll: () => api.get("/payments"),
+  process: (comandaId: string, data: any) =>
+    api.post(`/payments/${comandaId}`, data),
+};
+
+export const comandasApi = {
+  getAll: (status?: string) => api.get("/comandas", { params: { status } }),
+  getOne: (id: string) => api.get(`/comandas/${id}`),
+  create: (data: any) => api.post("/comandas", data),
+  close: (id: string) => api.patch(`/comandas/${id}/close`),
+};
+
+export const usersApi = {
+  getAll: () => api.get("/users"),
+  create: (data: any) => api.post("/users", data),
+  update: (id: string, data: any) => api.patch(`/users/${id}`, data),
+  delete: (id: string) => api.delete(`/users/${id}`),
 };
 
 export const reportsApi = {

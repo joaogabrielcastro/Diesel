@@ -21,7 +21,11 @@ export default function Login() {
       const { access_token, user } = response.data;
 
       setAuth(access_token, user);
-      navigate("/");
+
+      // Redireciona por role
+      if (user.role === "cozinha") navigate("/kitchen");
+      else if (user.role === "garcom") navigate("/tables");
+      else navigate("/");
     } catch (err: any) {
       setError(err.response?.data?.message || "Erro ao fazer login");
     } finally {

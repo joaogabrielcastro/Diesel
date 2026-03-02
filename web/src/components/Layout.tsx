@@ -52,16 +52,35 @@ export default function Layout() {
     navigate("/login");
   };
 
-  const navItems = [
-    { to: "/", icon: Home, label: "Dashboard" },
-    { to: "/kitchen", icon: ChefHat, label: "Cozinha" },
-    { to: "/products", icon: Package, label: "Produtos" },
-    { to: "/tables", icon: Table, label: "Mesas" },
-    { to: "/payments", icon: CreditCard, label: "Pagamentos" },
-    { to: "/reports", icon: BarChart, label: "Relatórios" },
-    { to: "/stock", icon: Warehouse, label: "Estoque" },
-    { to: "/settings", icon: Settings, label: "Configurações" },
+  const allNavItems = [
+    { to: "/", icon: Home, label: "Dashboard", roles: ["admin"] },
+    {
+      to: "/kitchen",
+      icon: ChefHat,
+      label: "Cozinha",
+      roles: ["admin", "cozinha"],
+    },
+    { to: "/products", icon: Package, label: "Produtos", roles: ["admin"] },
+    { to: "/tables", icon: Table, label: "Mesas", roles: ["admin", "garcom"] },
+    {
+      to: "/payments",
+      icon: CreditCard,
+      label: "Pagamentos",
+      roles: ["admin", "garcom"],
+    },
+    { to: "/reports", icon: BarChart, label: "Relatórios", roles: ["admin"] },
+    { to: "/stock", icon: Warehouse, label: "Estoque", roles: ["admin"] },
+    {
+      to: "/settings",
+      icon: Settings,
+      label: "Configurações",
+      roles: ["admin"],
+    },
   ];
+
+  const navItems = allNavItems.filter(
+    (item) => !user?.role || item.roles.includes(user.role),
+  );
 
   return (
     <div className="flex h-screen">
@@ -69,7 +88,11 @@ export default function Layout() {
       <aside className="w-64 bg-dark-light border-r border-gray-800">
         <div className="p-6">
           <h1 className="text-2xl font-bold text-primary">🍺 Diesel Bar</h1>
-          <p className="text-sm text-gray-400 mt-1">Admin Panel</p>
+          <p className="text-sm text-gray-400 mt-1">
+            {user?.role === "admin" && "Administrador"}
+            {user?.role === "garcom" && "Garçom"}
+            {user?.role === "cozinha" && "Cozinha"}
+          </p>
         </div>
 
         <nav className="px-4 space-y-2">
