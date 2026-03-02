@@ -17,9 +17,9 @@ rm -rf ~/.npm/_cacache 2>/dev/null || true
 echo "✅ Cache cleaned"
 echo ""
 
-# Install dependencies WITHOUT Prisma first
+# Install dependencies INCLUDING devDependencies (needed for @nestjs/cli)
 echo "📥 Installing dependencies (excluding Prisma)..."
-npm install --legacy-peer-deps --no-audit
+npm install --legacy-peer-deps --include=dev --no-audit
 echo "✅ Dependencies installed"
 echo ""
 

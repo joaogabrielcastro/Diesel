@@ -23,7 +23,7 @@ backend
 **Build Command:** (copie EXATAMENTE assim)
 
 ```bash
-npm install --legacy-peer-deps && npm uninstall prisma @prisma/client && npm install prisma@5.8.0 @prisma/client@5.8.0 --save-exact --legacy-peer-deps --force && npx prisma generate && npm run build
+npm install --legacy-peer-deps --include=dev && npm uninstall prisma @prisma/client && npm install prisma@5.8.0 @prisma/client@5.8.0 --save-exact --legacy-peer-deps --force && npx prisma generate && npm run build
 ```
 
 **Start Command:**
@@ -36,7 +36,7 @@ npx prisma migrate deploy && npm run start:prod
 
 ## 🔍 Por Que Isso Funciona?
 
-1. **`npm install --legacy-peer-deps`** → Instala todas as dependências
+1. **`npm install --legacy-peer-deps --include=dev`** → Instala todas as dependências (incluindo devDependencies como @nestjs/cli)
 2. **`npm uninstall prisma @prisma/client`** → REMOVE qualquer Prisma instalado
 3. **`npm install prisma@5.8.0 @prisma/client@5.8.0 --save-exact --legacy-peer-deps --force`** → Força instalação do Prisma 5.8.0
 4. **`npx prisma generate`** → Gera o Prisma Client
@@ -155,7 +155,7 @@ Antes de fazer deploy:
 **COPIE ISSO NO RENDER:**
 
 ```bash
-npm install --legacy-peer-deps && npm uninstall prisma @prisma/client && npm install prisma@5.8.0 @prisma/client@5.8.0 --save-exact --legacy-peer-deps --force && npx prisma generate && npm run build
+npm install --legacy-peer-deps --include=dev && npm uninstall prisma @prisma/client && npm install prisma@5.8.0 @prisma/client@5.8.0 --save-exact --legacy-peer-deps --force && npx prisma generate && npm run build
 ```
 
 ---

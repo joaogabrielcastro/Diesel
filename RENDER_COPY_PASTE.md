@@ -1,6 +1,7 @@
 # 🎯 SOLUÇÃO RÁPIDA - Copie e Cole no Render
 
 ## ❌ Problema
+
 ```
 Error: Prisma CLI Version: 7.4.2
 The datasource property `url` is no longer supported
@@ -13,6 +14,7 @@ The datasource property `url` is no longer supported
 ### 1. Configure no Render Dashboard
 
 **Root Directory:**
+
 ```
 backend
 ```
@@ -20,7 +22,7 @@ backend
 ### 2. Build Command (COPIE ESTA LINHA):
 
 ```bash
-npm install --legacy-peer-deps && npm uninstall prisma @prisma/client && npm install prisma@5.8.0 @prisma/client@5.8.0 --save-exact --legacy-peer-deps --force && npx prisma generate && npm run build
+npm install --legacy-peer-deps --include=dev && npm uninstall prisma @prisma/client && npm install prisma@5.8.0 @prisma/client@5.8.0 --save-exact --legacy-peer-deps --force && npx prisma generate && npm run build
 ```
 
 ### 3. Start Command:
@@ -40,6 +42,7 @@ NODE_ENV=production
 ```
 
 **Gerar JWT_SECRET:**
+
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
@@ -49,6 +52,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ## ✅ Como Verificar Sucesso
 
 Nos logs de build, procure:
+
 ```
 ✅ prisma: 5.8.0
 ✅ @prisma/client: 5.8.0

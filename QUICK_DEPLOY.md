@@ -34,7 +34,7 @@ git push origin main
 **Build Command** (copie EXATAMENTE):
 
 ```bash
-npm install --legacy-peer-deps && npm uninstall prisma @prisma/client && npm install prisma@5.8.0 @prisma/client@5.8.0 --save-exact --legacy-peer-deps --force && npx prisma generate && npm run build
+npm install --legacy-peer-deps --include=dev && npm uninstall prisma @prisma/client && npm install prisma@5.8.0 @prisma/client@5.8.0 --save-exact --legacy-peer-deps --force && npx prisma generate && npm run build
 ```
 
 **Start Command:**
