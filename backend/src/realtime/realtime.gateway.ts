@@ -4,13 +4,19 @@ import {
   SubscribeMessage,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  ConnectedSocket,
+  MessageBody,
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
+import { UseGuards } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
 
 @WebSocketGateway({
   cors: {
     origin: "*",
+    credentials: true,
   },
+  namespace: "/realtime",
 })
 export class RealtimeGateway
   implements OnGatewayConnection, OnGatewayDisconnect
@@ -18,36 +24,128 @@ export class RealtimeGateway
   @WebSocketServer()
   server: Server;
 
-  handleConnection(client: Socket) {
-    console.log(`Client connected: ${client.id}`);
+  constructor(private jwtService: JwtService) {}
+
+  async handleConnection(client: Socket) {
+    try {
+      // Autenticar via token no handshake
+      const token =
+        client.handshake.auth?.token ||
+        client.handshake.headers?.authorization?.split(" ")[1];
+
+      if (!token) {
+        console.log(`Client ${client.id} rejected: No token`);
+        client.disconnect();
+        return;
+      }
+
+      const payload = await this.jwtService.verifyAsync(token);
+      (client as any).user = payload;
+
+      console.log(`Client connected: ${client.id} | User: ${payload.sub}`);
+    } catch (error) {
+      console.log(`Client ${client.id} rejected: Invalid token`);
+      client.disconnect();
+    }
   }
 
   handleDisconnect(client: Socket) {
-    console.log(`Client disconnected: ${client.id}`);
+    const user = (client as any).user;
+    console.log(
+      `Client disconnected: ${client.id} | User: ${user?.sub || "Unknown"}`,
+    );
   }
 
   @SubscribeMessage("join-establishment")
-  handleJoinEstablishment(client: Socket, establishmentId: string) {
-    client.join(`establishment:${establishmentId}`);
-    console.log(`Client ${client.id} joined establishment ${establishmentId}`);
+  handleJoinEstablishment(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { establishmentId: string },
+  ) {
+    const user = (client as any).user;
+
+    // Verificar se o usuário pertence ao estabelecimento
+    if (user.establishmentId !== data.establishmentId) {
+      console.log(`Client ${client.id} tried to join wrong establishment`);
+      return { error: "Unauthorized" };
+    }
+
+    const room = `establishment:${data.establishmentId}`;
+    client.join(room);
+    console.log(`Client ${client.id} joined ${room}`);
+
+    return { success: true, room };
+  }
+
+  @SubscribeMessage("leave-establishment")
+  handleLeaveEstablishment(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { establishmentId: string },
+  ) {
+    const room = `establishment:${data.establishmentId}`;
+    client.leave(room);
+    console.log(`Client ${client.id} left ${room}`);
+
+    return { success: true };
   }
 
   // Broadcast new order to kitchen
   broadcastNewOrder(establishmentId: string, order: any) {
-    this.server.to(`establishment:${establishmentId}`).emit("new-order", order);
+    const room = `establishment:${establishmentId}`;
+    console.log(`Broadcasting new order to ${room}:`, order.id);
+    this.server.to(room).emit("new-order", {
+      type: "NEW_ORDER",
+      data: order,
+      timestamp: new Date(),
+    });
   }
 
   // Broadcast order status update
   broadcastOrderUpdate(establishmentId: string, order: any) {
-    this.server
-      .to(`establishment:${establishmentId}`)
-      .emit("order-updated", order);
+    const room = `establishment:${establishmentId}`;
+    console.log(`Broadcasting order update to ${room}:`, order.id);
+    this.server.to(room).emit("order-updated", {
+      type: "ORDER_UPDATED",
+      data: order,
+      timestamp: new Date(),
+    });
   }
 
   // Broadcast comanda update
   broadcastComandaUpdate(establishmentId: string, comanda: any) {
-    this.server
-      .to(`establishment:${establishmentId}`)
-      .emit("comanda-updated", comanda);
+    const room = `establishment:${establishmentId}`;
+    console.log(`Broadcasting comanda update to ${room}:`, comanda.id);
+    this.server.to(room).emit("comanda-updated", {
+      type: "COMANDA_UPDATED",
+      data: comanda,
+      timestamp: new Date(),
+    });
+  }
+
+  // Broadcast table update
+  broadcastTableUpdate(establishmentId: string, table: any) {
+    const room = `establishment:${establishmentId}`;
+    console.log(`Broadcasting table update to ${room}:`, table.id);
+    this.server.to(room).emit("table-updated", {
+      type: "TABLE_UPDATED",
+      data: table,
+      timestamp: new Date(),
+    });
+  }
+
+  // Broadcast stock alert
+  broadcastStockAlert(establishmentId: string, alert: any) {
+    const room = `establishment:${establishmentId}`;
+    console.log(`Broadcasting stock alert to ${room}`);
+    this.server.to(room).emit("stock-alert", {
+      type: "STOCK_ALERT",
+      data: alert,
+      timestamp: new Date(),
+    });
+  }
+
+  // Ping para verificar conexão
+  @SubscribeMessage("ping")
+  handlePing() {
+    return { event: "pong", timestamp: new Date() };
   }
 }

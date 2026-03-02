@@ -14,6 +14,8 @@ import { StockModule } from "./stock/stock.module";
 import { PaymentsModule } from "./payments/payments.module";
 import { QuickOrdersModule } from "./quick-orders/quick-orders.module";
 import { RealtimeModule } from "./realtime/realtime.module";
+import { ReportsModule } from "./reports/reports.module";
+import { UploadModule } from "./upload/upload.module";
 
 @Module({
   imports: [
@@ -46,6 +48,8 @@ import { RealtimeModule } from "./realtime/realtime.module";
     StockModule,
     PaymentsModule,
     QuickOrdersModule,
+    ReportsModule,
+    UploadModule,
   ],
 })
 export class AppModule {}

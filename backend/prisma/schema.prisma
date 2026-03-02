@@ -34,6 +34,7 @@ model Establishment {
   email         String
   phone         String?
   address       Json?           // Endereço completo
+  logo          String?         // Logo da empresa
   planId        String          @map("plan_id")
   status        EstablishmentStatus @default(ACTIVE)
   subscriptionExpiresAt DateTime? @map("subscription_expires_at")
@@ -153,6 +154,7 @@ model Comanda {
 enum ComandaStatus {
   OPEN
   CLOSED
+  PAID
   CANCELLED
 }
 

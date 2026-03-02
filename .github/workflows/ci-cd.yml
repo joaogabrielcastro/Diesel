@@ -1,0 +1,102 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: diesel_bar_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: |
+          npm install
+          cd backend && npm install
+
+      - name: Generate Prisma Client
+        run: cd backend && npx prisma generate
+
+      - name: Run tests
+        run: cd backend && npm test
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/diesel_bar_test
+          JWT_SECRET: test-secret
+
+  build-backend:
+    needs: test-backend
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: cd backend && npm install
+
+      - name: Generate Prisma Client
+        run: cd backend && npx prisma generate
+
+      - name: Build
+        run: cd backend && npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-build
+          path: backend/dist
+
+  build-web:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: cd web && npm install
+
+      - name: Build
+        run: cd web && npm run build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: web/dist

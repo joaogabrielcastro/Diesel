@@ -1,10 +1,51 @@
-import { Outlet, Link, useNavigate } from "react-router-dom";
-import { Home, ChefHat, Package, Table, BarChart, LogOut } from "lucide-react";
+import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
+import {
+  Home,
+  ChefHat,
+  Package,
+  Table,
+  BarChart,
+  LogOut,
+  Warehouse,
+  CreditCard,
+  Settings,
+} from "lucide-react";
 import { useAuthStore } from "../store/auth";
+import { useOrderNotifications } from "../services/websocket";
+import { useState, useEffect } from "react";
 
 export default function Layout() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuthStore();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Initialize WebSocket notifications
+  useOrderNotifications();
+
+  // Reset unread count when visiting kitchen page
+  useEffect(() => {
+    if (location.pathname === "/kitchen") {
+      setUnreadCount(0);
+    }
+  }, [location.pathname]);
+
+  // Listen for new orders to update badge
+  useEffect(() => {
+    const handleNewOrder = () => {
+      if (location.pathname !== "/kitchen") {
+        setUnreadCount((prev) => prev + 1);
+      }
+    };
+
+    const socket = (window as any).__socket;
+    if (socket) {
+      socket.on("new-order", handleNewOrder);
+      return () => {
+        socket.off("new-order", handleNewOrder);
+      };
+    }
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -16,7 +57,10 @@ export default function Layout() {
     { to: "/kitchen", icon: ChefHat, label: "Cozinha" },
     { to: "/products", icon: Package, label: "Produtos" },
     { to: "/tables", icon: Table, label: "Mesas" },
+    { to: "/payments", icon: CreditCard, label: "Pagamentos" },
     { to: "/reports", icon: BarChart, label: "Relatórios" },
+    { to: "/stock", icon: Warehouse, label: "Estoque" },
+    { to: "/settings", icon: Settings, label: "Configurações" },
   ];
 
   return (
@@ -33,9 +77,16 @@ export default function Layout() {
             <Link
               key={item.to}
               to={item.to}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors relative"
             >
-              <item.icon size={20} />
+              <div className="relative">
+                <item.icon size={20} />
+                {item.to === "/kitchen" && unreadCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </div>
               <span>{item.label}</span>
             </Link>
           ))}

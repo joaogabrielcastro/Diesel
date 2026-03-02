@@ -1,0 +1,11 @@
+<!-- Placeholder for notification.mp3 -->
+<!-- 
+  Para adicionar um som de notificação real:
+  1. Baixe um arquivo MP3 de notificação (ex: https://notificationsounds.com/)
+  2. Coloque o arquivo nesta pasta: web/public/notification.mp3
+  3. O WebSocket service já está configurado para reproduzir este arquivo
+  
+  Alternativa: use o som do sistema removendo estas linhas do websocket.ts:
+  const audio = new Audio('/notification.mp3');
+  audio.play().catch(console.error);
+-->
