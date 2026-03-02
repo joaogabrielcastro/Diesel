@@ -95,7 +95,7 @@ export default function Products() {
                 >
                   <td className="py-3 px-4 font-medium">{product.name}</td>
                   <td className="py-3 px-4">{product.category.name}</td>
-                  <td className="py-3 px-4">R$ {product.price.toFixed(2)}</td>
+                  <td className="py-3 px-4">R$ {Number(product.price).toFixed(2)}</td>
                   <td className="py-3 px-4 text-gray-400">
                     {product.code || "-"}
                   </td>
