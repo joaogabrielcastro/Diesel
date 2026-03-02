@@ -1,25 +1,18 @@
 ## 🚀 Deploy Rápido no Render
 
-### ⚡ Solução do Problema Prisma 7
+### ⚡ Solução DEFINITIVA para Prisma 7
 
-O projeto agora tem **configuração automática** que força Prisma 5.8.0.
-
-### 📦 Arquivos Criados:
-
-- ✅ `render.yaml` - Config automática do Render
-- ✅ `backend/build.sh` - Script que força Prisma 5.8.0
-- ✅ `backend/.npmrc` - Configurações NPM
-- ✅ `backend/package.json` - Versões fixadas
+** IMPORTANTE:** O Render continua instalando Prisma 7. Use a **configuração manual** abaixo (mais confiável).
 
 ---
 
-## 🎯 Deploy em 3 Passos
+## 🎯 Deploy em 4 Passos (GARANTIDO)
 
 ### 1️⃣ Commit e Push
 
 ```bash
 git add .
-git commit -m "fix: Add Render config with Prisma 5.8.0"
+git commit -m "fix: Force Prisma 5.8.0 with uninstall strategy"
 git push origin main
 ```
 
@@ -30,24 +23,35 @@ git push origin main
 - Name: `diesel-db`
 - Copie o **Internal Database URL**
 
-### 3️⃣ Criar Web Service
+### 3️⃣ Criar Web Service (MANUAL)
+
+⚠️ **NÃO use render.yaml**. Configure manualmente:
 
 - New → Web Service
 - Conecte seu repositório GitHub
-- **Render detecta render.yaml automaticamente** ✅
-- Configure apenas estas 2 variáveis:
-  - `DATABASE_URL`: Cole a Internal Database URL
-  - `JWT_SECRET`: Gere com `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
-- Click "Create Web Service"
+- **Root Directory:** `backend`
 
-**Pronto!** 🎉 O Render vai:
+**Build Command** (copie EXATAMENTE):
 
-1. Instalar dependências
-2. Forçar Prisma 5.8.0
-3. Gerar Prisma Client
-4. Buildar a aplicação
-5. Rodar migrations
-6. Iniciar o servidor
+```bash
+npm install --legacy-peer-deps && npm uninstall prisma @prisma/client && npm install prisma@5.8.0 @prisma/client@5.8.0 --save-exact --legacy-peer-deps --force && npx prisma generate && npm run build
+```
+
+**Start Command:**
+
+```bash
+npx prisma migrate deploy && npm run start:prod
+```
+
+### 4️⃣ Configurar Variáveis
+
+Environment → Add Environment Variable:
+
+- `DATABASE_URL`: Cole a Internal Database URL
+- `JWT_SECRET`: Gere com `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+- `NODE_ENV`: `production`
+
+**Deploy!** 🎉
 
 ---
 
