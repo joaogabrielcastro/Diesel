@@ -44,6 +44,7 @@ export const tablesApi = {
 export const categoriesApi = {
   getAll: () => api.get("/categories"),
   create: (data: any) => api.post("/categories", data),
+  update: (id: string, data: any) => api.patch(`/categories/${id}`, data),
   delete: (id: string) => api.delete(`/categories/${id}`),
 };
 
@@ -65,6 +66,7 @@ export const usersApi = {
   create: (data: any) => api.post("/users", data),
   update: (id: string, data: any) => api.patch(`/users/${id}`, data),
   delete: (id: string) => api.delete(`/users/${id}`),
+  toggleActive: (id: string) => api.patch(`/users/${id}/toggle`),
 };
 
 export const reportsApi = {

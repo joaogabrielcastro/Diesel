@@ -34,11 +34,23 @@ export class AuthService {
     return result;
   }
 
+  /** Maps DB enum role → frontend role string */
+  private mapRole(role: string): string {
+    const map: Record<string, string> = {
+      ADMIN: "admin",
+      WAITER: "garcom",
+      KITCHEN: "cozinha",
+      CASHIER: "caixa",
+    };
+    return map[role] ?? role.toLowerCase();
+  }
+
   async login(user: any) {
+    const role = this.mapRole(user.role);
     const payload = {
       sub: user.id,
       email: user.email,
-      role: user.role,
+      role,
       establishmentId: user.establishmentId,
     };
 
@@ -48,7 +60,7 @@ export class AuthService {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        role,
         establishmentId: user.establishmentId,
         establishment: user.establishment,
       },

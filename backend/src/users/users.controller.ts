@@ -2,7 +2,10 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
+  Delete,
   Body,
+  Param,
   UseGuards,
   Request,
 } from "@nestjs/common";
@@ -22,5 +25,20 @@ export class UsersController {
   @Post()
   create(@Request() req, @Body() data: any) {
     return this.usersService.create(req.user.establishmentId, data);
+  }
+
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() data: any) {
+    return this.usersService.update(id, data);
+  }
+
+  @Patch(":id/toggle")
+  toggleActive(@Param("id") id: string) {
+    return this.usersService.toggleActive(id);
+  }
+
+  @Delete(":id")
+  remove(@Param("id") id: string) {
+    return this.usersService.delete(id);
   }
 }

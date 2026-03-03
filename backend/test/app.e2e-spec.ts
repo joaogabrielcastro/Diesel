@@ -168,3 +168,234 @@ describe("Orders (e2e)", () => {
     });
   });
 });
+
+// ─── Categories ───────────────────────────────────────────────────────────────
+describe("Categories (e2e)", () => {
+  let app: INestApplication;
+  let authToken: string;
+  let createdCategoryId: string;
+
+  beforeAll(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+    app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe());
+    await app.init();
+
+    const res = await request(app.getHttpServer())
+      .post("/auth/login")
+      .send({ email: "admin@demo.com", password: "123456" });
+    authToken = res.body.access_token;
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it("GET /categories - should return array", () => {
+    return request(app.getHttpServer())
+      .get("/categories")
+      .set("Authorization", `Bearer ${authToken}`)
+      .expect(200)
+      .expect((res) => {
+        expect(Array.isArray(res.body)).toBe(true);
+      });
+  });
+
+  it("POST /categories - should create category", () => {
+    return request(app.getHttpServer())
+      .post("/categories")
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({ name: "Teste E2E", icon: "🧪" })
+      .expect(201)
+      .expect((res) => {
+        expect(res.body).toHaveProperty("id");
+        expect(res.body.name).toBe("Teste E2E");
+        createdCategoryId = res.body.id;
+      });
+  });
+
+  it("DELETE /categories/:id - should delete category", async () => {
+    if (!createdCategoryId) return;
+    return request(app.getHttpServer())
+      .delete(`/categories/${createdCategoryId}`)
+      .set("Authorization", `Bearer ${authToken}`)
+      .expect(200);
+  });
+
+  it("GET /categories - should require auth", () => {
+    return request(app.getHttpServer()).get("/categories").expect(401);
+  });
+});
+
+// ─── Tables ───────────────────────────────────────────────────────────────────
+describe("Tables (e2e)", () => {
+  let app: INestApplication;
+  let authToken: string;
+  let createdTableId: string;
+
+  beforeAll(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+    app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe());
+    await app.init();
+
+    const res = await request(app.getHttpServer())
+      .post("/auth/login")
+      .send({ email: "admin@demo.com", password: "123456" });
+    authToken = res.body.access_token;
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it("GET /tables - should return array", () => {
+    return request(app.getHttpServer())
+      .get("/tables")
+      .set("Authorization", `Bearer ${authToken}`)
+      .expect(200)
+      .expect((res) => {
+        expect(Array.isArray(res.body)).toBe(true);
+      });
+  });
+
+  it("POST /tables - should create table", () => {
+    return request(app.getHttpServer())
+      .post("/tables")
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({ number: 99, capacity: 4 })
+      .expect(201)
+      .expect((res) => {
+        expect(res.body).toHaveProperty("id");
+        expect(Number(res.body.number)).toBe(99);
+        createdTableId = res.body.id;
+      });
+  });
+
+  it("DELETE /tables/:id - should delete table", async () => {
+    if (!createdTableId) return;
+    return request(app.getHttpServer())
+      .delete(`/tables/${createdTableId}`)
+      .set("Authorization", `Bearer ${authToken}`)
+      .expect(200);
+  });
+
+  it("GET /tables - should require auth", () => {
+    return request(app.getHttpServer()).get("/tables").expect(401);
+  });
+});
+
+// ─── Users ────────────────────────────────────────────────────────────────────
+describe("Users (e2e)", () => {
+  let app: INestApplication;
+  let authToken: string;
+  let createdUserId: string;
+
+  beforeAll(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+    app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe());
+    await app.init();
+
+    const res = await request(app.getHttpServer())
+      .post("/auth/login")
+      .send({ email: "admin@demo.com", password: "123456" });
+    authToken = res.body.access_token;
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it("GET /users - should return array", () => {
+    return request(app.getHttpServer())
+      .get("/users")
+      .set("Authorization", `Bearer ${authToken}`)
+      .expect(200)
+      .expect((res) => {
+        expect(Array.isArray(res.body)).toBe(true);
+      });
+  });
+
+  it("POST /users - should create user", () => {
+    return request(app.getHttpServer())
+      .post("/users")
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({
+        name: "Garçom Teste",
+        email: `garcom-e2e-${Date.now()}@test.com`,
+        password: "123456",
+        role: "garcom",
+      })
+      .expect(201)
+      .expect((res) => {
+        expect(res.body).toHaveProperty("id");
+        expect(res.body.role).toBe("garcom");
+        createdUserId = res.body.id;
+      });
+  });
+
+  it("PATCH /users/:id/toggle - should toggle active", async () => {
+    if (!createdUserId) return;
+    return request(app.getHttpServer())
+      .patch(`/users/${createdUserId}/toggle`)
+      .set("Authorization", `Bearer ${authToken}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toHaveProperty("active");
+        expect(res.body.active).toBe(false);
+      });
+  });
+
+  it("DELETE /users/:id - should delete user", async () => {
+    if (!createdUserId) return;
+    return request(app.getHttpServer())
+      .delete(`/users/${createdUserId}`)
+      .set("Authorization", `Bearer ${authToken}`)
+      .expect(200);
+  });
+});
+
+// ─── Stock ────────────────────────────────────────────────────────────────────
+describe("Stock (e2e)", () => {
+  let app: INestApplication;
+  let authToken: string;
+
+  beforeAll(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+    app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe());
+    await app.init();
+
+    const res = await request(app.getHttpServer())
+      .post("/auth/login")
+      .send({ email: "admin@demo.com", password: "123456" });
+    authToken = res.body.access_token;
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it("GET /stock - should return array", () => {
+    return request(app.getHttpServer())
+      .get("/stock")
+      .set("Authorization", `Bearer ${authToken}`)
+      .expect(200)
+      .expect((res) => {
+        expect(Array.isArray(res.body)).toBe(true);
+      });
+  });
+
+  it("GET /stock - should require auth", () => {
+    return request(app.getHttpServer()).get("/stock").expect(401);
+  });
+});

@@ -101,11 +101,12 @@ describe("AuthService", () => {
       expect(result).toHaveProperty("access_token", mockToken);
       expect(result).toHaveProperty("user");
       expect(result.user.email).toBe("test@example.com");
+      expect(result.user.role).toBe("garcom"); // WAITER mapped to frontend role
       expect(jwtService.sign).toHaveBeenCalledWith({
         email: mockUser.email,
         sub: mockUser.id,
         establishmentId: mockUser.establishmentId,
-        role: mockUser.role,
+        role: "garcom", // mapped from WAITER
       });
     });
   });

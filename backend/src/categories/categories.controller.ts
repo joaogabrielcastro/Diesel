@@ -2,7 +2,10 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
+  Delete,
   Body,
+  Param,
   UseGuards,
   Request,
 } from "@nestjs/common";
@@ -22,5 +25,15 @@ export class CategoriesController {
   @Post()
   create(@Request() req, @Body() data: any) {
     return this.categoriesService.create(req.user.establishmentId, data);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() data: any) {
+    return this.categoriesService.update(id, data);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.categoriesService.delete(id);
   }
 }

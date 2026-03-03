@@ -71,8 +71,11 @@ async function main() {
   console.log("✅ Created demo users");
 
   // Create categories
-  const bebidasCategory = await prisma.category.create({
-    data: {
+  const bebidasCategory = await prisma.category.upsert({
+    where: { id: "demo-cat-bebidas" },
+    update: {},
+    create: {
+      id: "demo-cat-bebidas",
       establishmentId: demoEstablishment.id,
       name: "Bebidas",
       icon: "🍺",
@@ -80,8 +83,11 @@ async function main() {
     },
   });
 
-  const comidasCategory = await prisma.category.create({
-    data: {
+  const comidasCategory = await prisma.category.upsert({
+    where: { id: "demo-cat-comidas" },
+    update: {},
+    create: {
+      id: "demo-cat-comidas",
       establishmentId: demoEstablishment.id,
       name: "Comidas",
       icon: "🍔",
@@ -93,6 +99,7 @@ async function main() {
 
   // Create products
   await prisma.product.createMany({
+    skipDuplicates: true,
     data: [
       {
         establishmentId: demoEstablishment.id,
@@ -146,6 +153,7 @@ async function main() {
 
   // Create tables
   await prisma.table.createMany({
+    skipDuplicates: true,
     data: [
       {
         establishmentId: demoEstablishment.id,

@@ -9,6 +9,8 @@ import {
   Warehouse,
   CreditCard,
   Settings,
+  Users as UsersIcon,
+  Tag,
 } from "lucide-react";
 import { useAuthStore } from "../store/auth";
 import { useOrderNotifications } from "../services/websocket";
@@ -61,6 +63,7 @@ export default function Layout() {
       roles: ["admin", "cozinha"],
     },
     { to: "/products", icon: Package, label: "Produtos", roles: ["admin"] },
+    { to: "/categories", icon: Tag, label: "Categorias", roles: ["admin"] },
     { to: "/tables", icon: Table, label: "Mesas", roles: ["admin", "garcom"] },
     {
       to: "/payments",
@@ -74,6 +77,12 @@ export default function Layout() {
       to: "/settings",
       icon: Settings,
       label: "Configurações",
+      roles: ["admin"],
+    },
+    {
+      to: "/users",
+      icon: UsersIcon,
+      label: "Usuários",
       roles: ["admin"],
     },
   ];
