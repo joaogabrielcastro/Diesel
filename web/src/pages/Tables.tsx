@@ -354,7 +354,10 @@ function OccupiedTableModal({
   // Flatten all items across every order for summary view
   const allItems: { name: string; qty: number; price: number }[] = [];
   if (comanda?.orders) {
-    const itemMap: Record<string, { name: string; qty: number; price: number }> = {};
+    const itemMap: Record<
+      string,
+      { name: string; qty: number; price: number }
+    > = {};
     for (const order of comanda.orders) {
       for (const item of order.items ?? []) {
         const key = item.product?.id ?? item.productId;
@@ -373,11 +376,30 @@ function OccupiedTableModal({
   }
   const total = allItems.reduce((s, i) => s + i.price * i.qty, 0);
 
-  const ORDER_STATUS_BADGE: Record<string, { label: string; cls: string; icon: JSX.Element | null }> = {
-    PENDING:   { label: "Aguardando", cls: "bg-yellow-900 text-yellow-300", icon: <Clock size={11} /> },
-    PREPARING: { label: "Preparando", cls: "bg-blue-900 text-blue-300",   icon: <ChefHat size={11} /> },
-    READY:     { label: "Pronto",     cls: "bg-green-900 text-green-300",  icon: <CheckCircle2 size={11} /> },
-    DELIVERED: { label: "Entregue",   cls: "bg-gray-700 text-gray-400",    icon: <CheckCircle2 size={11} /> },
+  const ORDER_STATUS_BADGE: Record<
+    string,
+    { label: string; cls: string; icon: JSX.Element | null }
+  > = {
+    PENDING: {
+      label: "Aguardando",
+      cls: "bg-yellow-900 text-yellow-300",
+      icon: <Clock size={11} />,
+    },
+    PREPARING: {
+      label: "Preparando",
+      cls: "bg-blue-900 text-blue-300",
+      icon: <ChefHat size={11} />,
+    },
+    READY: {
+      label: "Pronto",
+      cls: "bg-green-900 text-green-300",
+      icon: <CheckCircle2 size={11} />,
+    },
+    DELIVERED: {
+      label: "Entregue",
+      cls: "bg-gray-700 text-gray-400",
+      icon: <CheckCircle2 size={11} />,
+    },
   };
 
   return (
@@ -396,7 +418,10 @@ function OccupiedTableModal({
               </p>
             )}
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-800 rounded-lg">
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-800 rounded-lg"
+          >
             <X size={20} />
           </button>
         </div>
@@ -405,7 +430,8 @@ function OccupiedTableModal({
         <div className="flex-1 overflow-y-auto min-h-0">
           {isLoading ? (
             <div className="flex items-center justify-center py-12 text-gray-400 gap-2">
-              <Loader2 size={18} className="animate-spin" /> Carregando comanda...
+              <Loader2 size={18} className="animate-spin" /> Carregando
+              comanda...
             </div>
           ) : !comanda ? (
             <div className="text-center py-10 text-gray-500 text-sm">
@@ -475,8 +501,7 @@ function OccupiedTableModal({
                           <p className="text-sm text-gray-300">
                             {order.items
                               ?.map(
-                                (i: any) =>
-                                  `${i.quantity}x ${i.product?.name}`,
+                                (i: any) => `${i.quantity}x ${i.product?.name}`,
                               )
                               .join(", ")}
                           </p>
@@ -534,7 +559,9 @@ function OccupiedTableModal({
           existingComandaId={comanda?.id}
           onClose={() => {
             setShowNewOrder(false);
-            queryClient.invalidateQueries({ queryKey: ["comanda-table", table.id] });
+            queryClient.invalidateQueries({
+              queryKey: ["comanda-table", table.id],
+            });
           }}
         />
       )}
