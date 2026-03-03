@@ -56,6 +56,24 @@ export class ComandasService {
     });
   }
 
+  async findByTable(tableId: string, establishmentId: string) {
+    return this.prisma.comanda.findFirst({
+      where: { tableId, establishmentId, status: "OPEN" },
+      include: {
+        table: true,
+        orders: {
+          include: {
+            items: {
+              include: { product: true },
+            },
+            user: { select: { id: true, name: true } },
+          },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    });
+  }
+
   async findOne(id: string, establishmentId: string) {
     const comanda = await this.prisma.comanda.findFirst({
       where: {

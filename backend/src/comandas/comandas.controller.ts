@@ -27,6 +27,11 @@ export class ComandasController {
     return this.comandasService.findAll(req.user.establishmentId, status);
   }
 
+  @Get("table/:tableId")
+  findByTable(@Request() req, @Param("tableId") tableId: string) {
+    return this.comandasService.findByTable(tableId, req.user.establishmentId);
+  }
+
   @Get(":id")
   findOne(@Request() req, @Param("id") id: string) {
     return this.comandasService.findOne(id, req.user.establishmentId);

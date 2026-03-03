@@ -57,6 +57,7 @@ export const paymentsApi = {
 export const comandasApi = {
   getAll: (status?: string) => api.get("/comandas", { params: { status } }),
   getOne: (id: string) => api.get(`/comandas/${id}`),
+  getByTable: (tableId: string) => api.get(`/comandas/table/${tableId}`),
   create: (data: any) => api.post("/comandas", data),
   close: (id: string) => api.patch(`/comandas/${id}/close`),
 };

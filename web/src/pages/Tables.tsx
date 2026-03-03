@@ -8,6 +8,11 @@ import {
   AlertCircle,
   Users,
   ClipboardList,
+  Receipt,
+  Clock,
+  ChefHat,
+  CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -46,15 +51,22 @@ const fmt = (v: number) =>
 // ─── Modal Novo Pedido ─────────────────────────────────────────────────────────
 function NewOrderModal({
   table,
+  existingComandaId,
   onClose,
 }: {
   table: any;
+  existingComandaId?: string | null;
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
-  const [step, setStep] = useState<"setup" | "products">("setup");
+  // If we already have a comanda (mesa ocupada → Add Order), skip setup
+  const [step, setStep] = useState<"setup" | "products">(
+    existingComandaId ? "products" : "setup",
+  );
   const [customerName, setCustomerName] = useState("");
-  const [comandaId, setComanadaId] = useState<string | null>(null);
+  const [comandaId, setComanadaId] = useState<string | null>(
+    existingComandaId ?? null,
+  );
   const [items, setItems] = useState<OrderItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [obs, setObs] = useState("");
@@ -323,28 +335,174 @@ function OccupiedTableModal({
   const queryClient = useQueryClient();
   const [showNewOrder, setShowNewOrder] = useState(false);
 
+  const { data: comanda, isLoading } = useQuery({
+    queryKey: ["comanda-table", table.id],
+    queryFn: async () => (await comandasApi.getByTable(table.id)).data,
+    refetchInterval: 15000,
+  });
+
   const updateStatus = useMutation({
     mutationFn: (status: string) => tablesApi.updateStatus(table.id, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tables"] });
+      queryClient.invalidateQueries({ queryKey: ["comanda-table", table.id] });
       toast.success("Status atualizado");
       onClose();
     },
   });
 
+  // Flatten all items across every order for summary view
+  const allItems: { name: string; qty: number; price: number }[] = [];
+  if (comanda?.orders) {
+    const itemMap: Record<string, { name: string; qty: number; price: number }> = {};
+    for (const order of comanda.orders) {
+      for (const item of order.items ?? []) {
+        const key = item.product?.id ?? item.productId;
+        if (itemMap[key]) {
+          itemMap[key].qty += item.quantity;
+        } else {
+          itemMap[key] = {
+            name: item.product?.name ?? "—",
+            qty: item.quantity,
+            price: item.unitPrice ?? item.product?.price ?? 0,
+          };
+        }
+      }
+    }
+    allItems.push(...Object.values(itemMap));
+  }
+  const total = allItems.reduce((s, i) => s + i.price * i.qty, 0);
+
+  const ORDER_STATUS_BADGE: Record<string, { label: string; cls: string; icon: JSX.Element | null }> = {
+    PENDING:   { label: "Aguardando", cls: "bg-yellow-900 text-yellow-300", icon: <Clock size={11} /> },
+    PREPARING: { label: "Preparando", cls: "bg-blue-900 text-blue-300",   icon: <ChefHat size={11} /> },
+    READY:     { label: "Pronto",     cls: "bg-green-900 text-green-300",  icon: <CheckCircle2 size={11} /> },
+    DELIVERED: { label: "Entregue",   cls: "bg-gray-700 text-gray-400",    icon: <CheckCircle2 size={11} /> },
+  };
+
   return (
     <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-900 rounded-xl w-full max-w-sm">
+      <div className="bg-gray-900 rounded-xl w-full max-w-lg flex flex-col max-h-[92vh]">
+        {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-gray-800">
-          <h2 className="text-xl font-bold">Mesa {table.number} — Ocupada</h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-800 rounded-lg"
-          >
+          <div>
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <Receipt size={20} className="text-red-400" />
+              Mesa {table.number}
+            </h2>
+            {comanda?.customerName && (
+              <p className="text-gray-400 text-sm mt-0.5">
+                👤 {comanda.customerName}
+              </p>
+            )}
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-gray-800 rounded-lg">
             <X size={20} />
           </button>
         </div>
-        <div className="p-5 space-y-3">
+
+        {/* Comanda body */}
+        <div className="flex-1 overflow-y-auto min-h-0">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12 text-gray-400 gap-2">
+              <Loader2 size={18} className="animate-spin" /> Carregando comanda...
+            </div>
+          ) : !comanda ? (
+            <div className="text-center py-10 text-gray-500 text-sm">
+              Nenhuma comanda aberta encontrada
+            </div>
+          ) : (
+            <div className="p-4 space-y-4">
+              {/* Resumo de itens */}
+              {allItems.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                    Consumo
+                  </p>
+                  <div className="bg-gray-800 rounded-lg overflow-hidden">
+                    {allItems.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="flex justify-between items-center px-4 py-2.5 border-b border-gray-700/50 last:border-0 text-sm"
+                      >
+                        <span>
+                          <span className="font-medium text-gray-300">
+                            {item.qty}x
+                          </span>{" "}
+                          {item.name}
+                        </span>
+                        <span className="text-gray-300 font-medium">
+                          {fmt(item.price * item.qty)}
+                        </span>
+                      </div>
+                    ))}
+                    <div className="flex justify-between items-center px-4 py-3 bg-gray-800/80 font-bold">
+                      <span>Total</span>
+                      <span className="text-primary text-lg">{fmt(total)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Pedidos com status */}
+              {comanda.orders?.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                    Pedidos ({comanda.orders.length})
+                  </p>
+                  <div className="space-y-2">
+                    {comanda.orders.map((order: any, idx: number) => {
+                      const badge = ORDER_STATUS_BADGE[order.status] ?? {
+                        label: order.status,
+                        cls: "bg-gray-700 text-gray-400",
+                        icon: null,
+                      };
+                      return (
+                        <div
+                          key={order.id}
+                          className="bg-gray-800 rounded-lg px-4 py-3"
+                        >
+                          <div className="flex justify-between items-center mb-1.5">
+                            <span className="text-xs text-gray-400">
+                              Pedido #{idx + 1}
+                            </span>
+                            <span
+                              className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${badge.cls}`}
+                            >
+                              {badge.icon} {badge.label}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-300">
+                            {order.items
+                              ?.map(
+                                (i: any) =>
+                                  `${i.quantity}x ${i.product?.name}`,
+                              )
+                              .join(", ")}
+                          </p>
+                          {order.observations && (
+                            <p className="text-xs text-yellow-400/80 mt-1">
+                              📝 {order.observations}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {allItems.length === 0 && (
+                <p className="text-center text-gray-500 text-sm py-4">
+                  Comanda aberta, sem pedidos ainda
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Ações */}
+        <div className="p-4 border-t border-gray-800 space-y-3">
           <button
             onClick={() => setShowNewOrder(true)}
             className="btn btn-primary w-full flex items-center justify-center gap-2"
@@ -354,25 +512,29 @@ function OccupiedTableModal({
           <div className="flex gap-3">
             <button
               onClick={() => updateStatus.mutate("CLEANING")}
+              disabled={updateStatus.isPending}
               className="btn bg-blue-700 hover:bg-blue-600 flex-1 text-sm"
             >
               Limpeza
             </button>
             <button
               onClick={() => updateStatus.mutate("AVAILABLE")}
+              disabled={updateStatus.isPending}
               className="btn bg-green-700 hover:bg-green-600 flex-1 text-sm"
             >
-              Liberar
+              Liberar Mesa
             </button>
           </div>
         </div>
       </div>
+
       {showNewOrder && (
         <NewOrderModal
           table={table}
+          existingComandaId={comanda?.id}
           onClose={() => {
             setShowNewOrder(false);
-            onClose();
+            queryClient.invalidateQueries({ queryKey: ["comanda-table", table.id] });
           }}
         />
       )}
