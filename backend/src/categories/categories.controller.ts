@@ -27,13 +27,13 @@ export class CategoriesController {
     return this.categoriesService.create(req.user.establishmentId, data);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() data: any) {
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() data: any) {
     return this.categoriesService.update(id, data);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
+  @Delete(":id")
+  remove(@Param("id") id: string) {
     return this.categoriesService.delete(id);
   }
 }

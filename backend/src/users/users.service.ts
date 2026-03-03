@@ -9,7 +9,14 @@ export class UsersService {
   async findAll(establishmentId: string) {
     const users = await this.prisma.user.findMany({
       where: { establishmentId },
-      select: { id: true, name: true, email: true, role: true, active: true, createdAt: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        active: true,
+        createdAt: true,
+      },
     });
     return users.map((u) => ({ ...u, role: this.fromDbRole(u.role) }));
   }
@@ -52,7 +59,8 @@ export class UsersService {
 
   async update(id: string, data: any) {
     const updateData: any = { ...data };
-    if (data.password) updateData.password = await bcrypt.hash(data.password, 10);
+    if (data.password)
+      updateData.password = await bcrypt.hash(data.password, 10);
     if (data.role) updateData.role = this.toDbRole(data.role);
     const updated = await this.prisma.user.update({
       where: { id },

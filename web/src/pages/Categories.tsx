@@ -5,8 +5,26 @@ import { toast } from "sonner";
 import { categoriesApi } from "../services/api";
 
 const EMOJI_LIST = [
-  "🍺", "🍔", "🍕", "🍝", "🍣", "🥗", "🍰", "🧃", "🥩", "🍟",
-  "🍦", "🍷", "🥤", "🫕", "🍜", "🧆", "🥪", "🍤", "🍗", "☕",
+  "🍺",
+  "🍔",
+  "🍕",
+  "🍝",
+  "🍣",
+  "🥗",
+  "🍰",
+  "🧃",
+  "🥩",
+  "🍟",
+  "🍦",
+  "🍷",
+  "🥤",
+  "🫕",
+  "🍜",
+  "🧆",
+  "🥪",
+  "🍤",
+  "🍗",
+  "☕",
 ];
 
 function CategoryModal({
@@ -42,7 +60,10 @@ function CategoryModal({
           <h2 className="text-xl font-bold">
             {isEdit ? "Editar Categoria" : "Nova Categoria"}
           </h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-800 rounded-lg">
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-800 rounded-lg"
+          >
             <X size={20} />
           </button>
         </div>
@@ -120,7 +141,11 @@ export default function Categories() {
   const queryClient = useQueryClient();
   const [modal, setModal] = useState<"new" | any | null>(null);
 
-  const { data: categories, isLoading, isError } = useQuery({
+  const {
+    data: categories,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => (await categoriesApi.getAll()).data,
   });
@@ -136,7 +161,12 @@ export default function Categories() {
   });
 
   const handleDelete = (cat: any) => {
-    if (!confirm(`Remover categoria "${cat.name}"? Produtos vinculados perderão a categoria.`)) return;
+    if (
+      !confirm(
+        `Remover categoria "${cat.name}"? Produtos vinculados perderão a categoria.`,
+      )
+    )
+      return;
     deleteCategory.mutate(cat.id);
   };
 
@@ -178,10 +208,12 @@ export default function Categories() {
         </div>
       ) : (
         <>
-          {(!categories || categories.length === 0) ? (
+          {!categories || categories.length === 0 ? (
             <div className="card text-center py-16 text-gray-400">
               <p className="text-5xl mb-4">🏷️</p>
-              <p className="text-lg font-medium">Nenhuma categoria cadastrada</p>
+              <p className="text-lg font-medium">
+                Nenhuma categoria cadastrada
+              </p>
               <p className="text-sm mt-2">
                 Clique em "Nova Categoria" para começar
               </p>
