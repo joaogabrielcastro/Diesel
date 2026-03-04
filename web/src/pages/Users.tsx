@@ -21,7 +21,17 @@ const ROLES: { value: string; label: string }[] = [
 const ROLE_BADGE: Record<string, string> = {
   admin: "bg-purple-700 text-purple-200",
   garcom: "bg-blue-700 text-blue-200",
+  waiter: "bg-blue-700 text-blue-200", // Fallback para waiter
   cozinha: "bg-orange-700 text-orange-200",
+  kitchen: "bg-orange-700 text-orange-200", // Fallback para kitchen
+};
+
+const normalizeRole = (role?: string) => {
+  if (!role) return undefined;
+  const lower = role.toLowerCase();
+  if (lower === "waiter") return "garcom";
+  if (lower === "kitchen") return "cozinha";
+  return lower;
 };
 
 function UserModal({ user, onClose }: { user?: any; onClose: () => void }) {
@@ -32,7 +42,7 @@ function UserModal({ user, onClose }: { user?: any; onClose: () => void }) {
     name: user?.name ?? "",
     email: user?.email ?? "",
     password: "",
-    role: user?.role ?? "garcom",
+    role: normalizeRole(user?.role) ?? "garcom",
   });
 
   const save = useMutation({
@@ -248,8 +258,8 @@ export default function Users() {
                     <span
                       className={`px-2 py-0.5 rounded-full text-xs font-medium ${ROLE_BADGE[user.role] ?? "bg-gray-700"}`}
                     >
-                      {ROLES.find((r) => r.value === user.role)?.label ??
-                        user.role}
+                      {ROLES.find((r) => r.value === normalizeRole(user.role))
+                        ?.label ?? user.role}
                     </span>
                   </td>
                   <td className="px-5 py-4">

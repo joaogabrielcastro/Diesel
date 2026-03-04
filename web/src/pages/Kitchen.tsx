@@ -1,13 +1,16 @@
+import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Clock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { ordersApi } from "../services/api";
 import { useConfirm } from "../hooks/useConfirm";
 import { ListSkeleton } from "../components/LoadingSkeleton";
+import { useWebSocket } from "../services/websocket";
 
 export default function Kitchen() {
   const queryClient = useQueryClient();
   const { confirm } = useConfirm();
+  const { socket } = useWebSocket();
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ["kitchen-orders"],
@@ -15,8 +18,27 @@ export default function Kitchen() {
       const response = await ordersApi.getKitchen();
       return response.data;
     },
-    refetchInterval: 3000,
+    // Mantém polling como redundância, mas aumenta intervalo
+    refetchInterval: 10000,
   });
+
+  // Escutar eventos via Socket
+  useEffect(() => {
+    if (!socket) return;
+
+    const refresh = () => {
+      console.log("⚡ [Kitchen] Atualizando pedidos via socket...");
+      queryClient.invalidateQueries({ queryKey: ["kitchen-orders"] });
+    };
+
+    socket.on("new-order", refresh);
+    socket.on("order-updated", refresh);
+
+    return () => {
+      socket.off("new-order", refresh);
+      socket.off("order-updated", refresh);
+    };
+  }, [socket, queryClient]);
 
   const updateStatus = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>

@@ -25,13 +25,36 @@ function PrivateRoute({
   roles?: string[];
 }) {
   const { token, user } = useAuthStore();
-  if (!token) return <Navigate to="/login" />;
-  if (roles && user?.role && !roles.includes(user.role)) {
+
+  const userRole = user?.role?.toLowerCase();
+
+  console.log("🔒 PrivateRoute Check:", {
+    path: window.location.pathname,
+    hasToken: !!token,
+    userRole: userRole,
+    originalRole: user?.role,
+    requiredRoles: roles,
+  });
+
+  if (!token) {
+    console.warn("🚫 Acesso negado: Sem token. Redirecionando para login.");
+    return <Navigate to="/login" />;
+  }
+
+  if (roles && userRole && !roles.includes(userRole)) {
+    console.warn(
+      `🚫 Acesso negado: Role '${userRole}' não tem permissão. Esperado: ${roles.join(", ")}`,
+    );
+
     // Redirect to appropriate home based on role
-    if (user.role === "cozinha") return <Navigate to="/kitchen" />;
-    if (user.role === "garcom") return <Navigate to="/tables" />;
+    if (userRole === "cozinha" || userRole === "kitchen")
+      return <Navigate to="/kitchen" />;
+    if (userRole === "garcom" || userRole === "waiter")
+      return <Navigate to="/tables" />;
     return <Navigate to="/" />;
   }
+
+  console.log("✅ Acesso permitido");
   return <>{children}</>;
 }
 
@@ -48,12 +71,16 @@ function WebSocketHandler() {
 function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter>
+      <BrowserRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
         <WebSocketHandler />
         <Toaster position="top-right" richColors expand={false} closeButton />
         <ConfirmDialog />
         <Routes>
           <Route path="/login" element={<Login />} />
+
+          {/* Admin Routes */}
           <Route
             path="/"
             element={
@@ -63,38 +90,39 @@ function App() {
             }
           >
             <Route index element={<Dashboard />} />
-            <Route path="kitchen" element={<Kitchen />} />
             <Route path="products" element={<Products />} />
-            <Route path="tables" element={<Tables />} />
             <Route path="reports" element={<Reports />} />
             <Route path="stock" element={<Stock />} />
-            <Route path="payments" element={<Payments />} />
             <Route path="settings" element={<Settings />} />
             <Route path="users" element={<Users />} />
             <Route path="categories" element={<Categories />} />
           </Route>
-          {/* Garçom */}
+
+          {/* Shared Routes - Acessible by multiply roles */}
           <Route
-            path="/garcom"
             element={
-              <PrivateRoute roles={["admin", "garcom"]}>
+              <PrivateRoute roles={["admin", "garcom", "waiter"]}>
                 <Layout />
               </PrivateRoute>
             }
           >
-            <Route index element={<Navigate to="/tables" />} />
+            <Route path="/tables" element={<Tables />} />
+            <Route path="/payments" element={<Payments />} />
           </Route>
-          {/* Cozinha */}
+
           <Route
-            path="/cozinha"
             element={
-              <PrivateRoute roles={["admin", "cozinha"]}>
+              <PrivateRoute roles={["admin", "cozinha", "kitchen"]}>
                 <Layout />
               </PrivateRoute>
             }
           >
-            <Route index element={<Navigate to="/kitchen" />} />
+            <Route path="/kitchen" element={<Kitchen />} />
           </Route>
+
+          {/* Redirects for legacy routes/shortcuts */}
+          <Route path="/garcom" element={<Navigate to="/tables" replace />} />
+          <Route path="/cozinha" element={<Navigate to="/kitchen" replace />} />
         </Routes>
       </BrowserRouter>
     </ErrorBoundary>

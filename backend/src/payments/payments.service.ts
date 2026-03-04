@@ -179,6 +179,13 @@ export class PaymentsService {
           where: {
             status: "OPEN",
           },
+          include: {
+            orders: {
+              include: {
+                items: true,
+              },
+            },
+          },
         },
       },
     });
@@ -187,23 +194,54 @@ export class PaymentsService {
       throw new Error("Mesa não possui comandas abertas");
     }
 
-    // Atualizar status das comandas
-    await this.prisma.comanda.updateMany({
-      where: {
-        tableId,
-        status: "OPEN",
-      },
-      data: {
-        status: "PAID",
-      },
-    });
+    // Mapear método de pagamento do frontend para o banco
+    // CARD -> CREDIT_CARD (Default)
+    let dbMethod: any = "CASH";
+    if (paymentMethod === "CARD") dbMethod = "CREDIT_CARD";
+    else if (paymentMethod === "PIX") dbMethod = "PIX";
 
-    // Atualizar status da mesa
-    await this.prisma.table.update({
-      where: { id: tableId },
-      data: {
-        status: "AVAILABLE",
-      },
+    // Usar transação para garantir integridade e gerar registros financeiros
+    await this.prisma.$transaction(async (tx) => {
+      // Processar cada comanda aberta
+      for (const comanda of table.comandas) {
+        let comandaTotal = 0;
+
+        // Calcular total real baseado nos pedidos
+        comanda.orders.forEach((order) => {
+          order.items.forEach((item) => {
+            comandaTotal += Number(item.price) * item.quantity;
+          });
+        });
+
+        // 1. Criar registro de pagamento
+        await tx.payment.create({
+          data: {
+            comandaId: comanda.id,
+            amount: comandaTotal,
+            method: dbMethod,
+            status: "PAID",
+            paidAt: new Date(),
+          },
+        });
+
+        // 2. Atualizar comanda para PAGA e fechar
+        await tx.comanda.update({
+          where: { id: comanda.id },
+          data: {
+            status: "PAID",
+            closedAt: new Date(),
+            total: comandaTotal,
+          },
+        });
+      }
+
+      // 3. Liberar mesa
+      await tx.table.update({
+        where: { id: tableId },
+        data: {
+          status: "AVAILABLE",
+        },
+      });
     });
 
     return {

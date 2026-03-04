@@ -22,14 +22,26 @@ export class UsersService {
   }
 
   /** Maps frontend role string → DB enum */
-  private toDbRole(role: string): string {
+  private toDbRole(role: string): any {
+    if (!role) return "WAITER";
+
+    // Normalize input
+    const normalized = role.toLowerCase().trim();
+
     const map: Record<string, string> = {
       admin: "ADMIN",
       garcom: "WAITER",
+      waiter: "WAITER",
       cozinha: "KITCHEN",
+      kitchen: "KITCHEN",
       caixa: "CASHIER",
+      cashier: "CASHIER",
     };
-    return map[role] ?? role.toUpperCase();
+
+    // Map or fallback to uppercase
+    const mapped = map[normalized] ?? normalized.toUpperCase();
+    console.log(`[UsersService] Role mapping: '${role}' -> '${mapped}'`);
+    return mapped;
   }
 
   /** Maps DB enum → frontend role string */
@@ -44,17 +56,28 @@ export class UsersService {
   }
 
   async create(establishmentId: string, data: any) {
-    const hashedPassword = await bcrypt.hash(data.password, 10);
-    const created = await this.prisma.user.create({
-      data: {
-        ...data,
-        role: this.toDbRole(data.role),
-        password: hashedPassword,
-        establishmentId,
-      },
-      select: { id: true, name: true, email: true, role: true, active: true },
-    });
-    return { ...created, role: this.fromDbRole(created.role) };
+    try {
+      console.log("Creating user payload:", JSON.stringify(data));
+      const hashedPassword = await bcrypt.hash(data.password, 10);
+
+      const dbRole = this.toDbRole(data.role);
+
+      const created = await this.prisma.user.create({
+        data: {
+          name: data.name,
+          email: data.email,
+          role: dbRole,
+          password: hashedPassword,
+          establishmentId,
+          active: true,
+        },
+        select: { id: true, name: true, email: true, role: true, active: true },
+      });
+      return { ...created, role: this.fromDbRole(created.role) };
+    } catch (e) {
+      console.error("Error creating user:", e);
+      throw e;
+    }
   }
 
   async update(id: string, data: any) {

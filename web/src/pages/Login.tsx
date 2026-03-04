@@ -18,13 +18,20 @@ export default function Login() {
       setError("");
 
       const response = await authApi.login(email, password);
+      console.log("🔑 Login feito com sucesso. Resposta:", response.data);
+
       const { access_token, user } = response.data;
+
+      if (!user || !user.role) {
+        console.error("❌ ERRO CRÍTICO: Usuário sem role definida!", user);
+      }
 
       setAuth(access_token, user);
 
       // Redireciona por role
-      if (user.role === "cozinha") navigate("/kitchen");
-      else if (user.role === "garcom") navigate("/tables");
+      const role = user.role?.toLowerCase();
+      if (role === "cozinha" || role === "kitchen") navigate("/kitchen");
+      else if (role === "garcom" || role === "waiter") navigate("/tables");
       else navigate("/");
     } catch (err: any) {
       setError(err.response?.data?.message || "Erro ao fazer login");

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import io, { Socket } from "socket.io-client";
 import { toast } from "sonner";
 
@@ -15,10 +15,17 @@ if (typeof window !== "undefined") {
 }
 
 export function useWebSocket(establishmentId?: string) {
-  const socketRef = useRef<Socket | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
+  const [socketInstance, setSocketInstance] = useState<Socket | null>(socket);
+  const [isConnected, setIsConnected] = useState(socket?.connected ?? false);
 
   useEffect(() => {
+    // If we just want the instance and it already exists
+    if (!establishmentId && socket) {
+      setSocketInstance(socket);
+      setIsConnected(socket.connected);
+      return;
+    }
+
     if (!establishmentId) return;
 
     const token = localStorage.getItem("token");
@@ -64,7 +71,7 @@ export function useWebSocket(establishmentId?: string) {
       (window as any).__socket = socket;
     }
 
-    socketRef.current = socket;
+    setSocketInstance(socket);
 
     // Join establishment room
     socket.emit("join-establishment", { establishmentId }, (response: any) => {
@@ -85,11 +92,13 @@ export function useWebSocket(establishmentId?: string) {
 
     return () => {
       clearInterval(pingInterval);
-      socket?.emit("leave-establishment", { establishmentId });
+      // Don't disconnect global socket on unmount, just leave room?
+      // Actually typically we want to stay connected in SPA.
+      // socket?.emit("leave-establishment", { establishmentId });
     };
   }, [establishmentId]);
 
-  return { socket: socketRef.current, isConnected };
+  return { socket: socketInstance, isConnected };
 }
 
 export function useOrderNotifications() {

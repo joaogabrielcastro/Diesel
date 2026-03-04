@@ -8,6 +8,9 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
+      devOptions: {
+        enabled: false,
+      },
       includeAssets: ["icon-192.png", "icon-512.png"],
       manifest: {
         name: "Diesel Bar - Sistema de Gestão",
@@ -61,7 +64,8 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173,
+    port: 5178,
+    strictPort: true,
     proxy: {
       "/api": {
         target: "http://localhost:3000",

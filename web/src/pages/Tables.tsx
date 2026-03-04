@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useWebSocket } from "../services/websocket";
 import {
   Plus,
   X,
@@ -195,14 +196,18 @@ function NewOrderModal({
             </button>
           </div>
         ) : (
-          <div className="flex flex-1 overflow-hidden min-h-0">
+          <div className="flex flex-col md:flex-row flex-1 overflow-hidden min-h-0">
             {/* Lista de produtos */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {/* Filtro por categoria */}
               <div className="flex gap-2 flex-wrap">
                 <button
                   onClick={() => setSelectedCategory(null)}
-                  className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${!selectedCategory ? "bg-primary text-white" : "bg-gray-800 hover:bg-gray-700"}`}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                    !selectedCategory
+                      ? "bg-primary text-white"
+                      : "bg-gray-800 hover:bg-gray-700"
+                  }`}
                 >
                   Todos
                 </button>
@@ -210,13 +215,17 @@ function NewOrderModal({
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${selectedCategory === cat.id ? "bg-primary text-white" : "bg-gray-800 hover:bg-gray-700"}`}
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                      selectedCategory === cat.id
+                        ? "bg-primary text-white"
+                        : "bg-gray-800 hover:bg-gray-700"
+                    }`}
                   >
                     {cat.name}
                   </button>
                 ))}
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                 {filteredProducts
                   ?.filter((p: any) => p.active !== false)
                   .map((product: any) => {
@@ -227,9 +236,15 @@ function NewOrderModal({
                       <div
                         key={product.id}
                         onClick={() => addItem(product)}
-                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${qty > 0 ? "border-primary bg-primary/10" : "border-gray-700 hover:border-gray-600 bg-gray-800/50"}`}
+                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                          qty > 0
+                            ? "border-primary bg-primary/10"
+                            : "border-gray-700 hover:border-gray-600 bg-gray-800/50"
+                        }`}
                       >
-                        <p className="font-medium text-sm">{product.name}</p>
+                        <p className="font-medium text-sm line-clamp-2">
+                          {product.name}
+                        </p>
                         <p className="text-primary font-bold mt-1 text-sm">
                           {fmt(product.price)}
                         </p>
@@ -262,11 +277,11 @@ function NewOrderModal({
             </div>
 
             {/* Carrinho */}
-            <div className="w-60 border-l border-gray-800 flex flex-col p-4">
+            <div className="w-full md:w-80 border-t md:border-t-0 md:border-l border-gray-800 flex flex-col p-4 bg-gray-900/50 md:bg-transparent h-[40vh] md:h-auto">
               <h3 className="font-bold mb-3 flex items-center gap-2 text-sm">
                 <ShoppingCart size={16} /> Pedido
               </h3>
-              <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
+              <div className="flex-1 overflow-y-auto space-y-2 min-h-0 mb-3">
                 {items.length === 0 ? (
                   <p className="text-gray-500 text-xs text-center py-4">
                     Nenhum item selecionado
@@ -296,12 +311,12 @@ function NewOrderModal({
                 )}
               </div>
               <textarea
-                placeholder="Observações..."
+                placeholder="Obs: Sem cebola, etc..."
                 value={obs}
                 onChange={(e) => setObs(e.target.value)}
-                className="input text-xs mt-3 resize-none h-14"
+                className="input text-xs mb-3 resize-none h-14 bg-gray-800 border-gray-700 focus:border-primary"
               />
-              <div className="mt-3 border-t border-gray-800 pt-3">
+              <div className="pt-3 border-t border-gray-800">
                 <div className="flex justify-between font-bold text-sm mb-3">
                   <span>Total</span>
                   <span className="text-primary">{fmt(total)}</span>
@@ -309,7 +324,7 @@ function NewOrderModal({
                 <button
                   onClick={() => createOrder.mutate()}
                   disabled={items.length === 0 || createOrder.isPending}
-                  className="btn btn-primary w-full text-sm disabled:opacity-50"
+                  className="btn btn-primary w-full text-sm disabled:opacity-50 py-3"
                 >
                   {createOrder.isPending
                     ? "Enviando..."
@@ -646,6 +661,37 @@ function NewTableModal({ onClose }: { onClose: () => void }) {
 export default function Tables() {
   const [selectedTable, setSelectedTable] = useState<any>(null);
   const [showNewTable, setShowNewTable] = useState(false);
+  const queryClient = useQueryClient();
+  const { socket } = useWebSocket();
+
+  // Real-time updates for table status
+  useEffect(() => {
+    if (!socket) return;
+
+    const refresh = () => {
+      console.log("⚡ [Tables] Atualizando status das mesas...");
+      queryClient.invalidateQueries({ queryKey: ["tables"] });
+
+      // If a table is open, refresh its comanda/orders too
+      if (selectedTable) {
+        queryClient.invalidateQueries({
+          queryKey: ["comanda-table", selectedTable.id],
+        });
+      }
+    };
+
+    socket.on("table-updated", refresh);
+    socket.on("order-updated", refresh);
+    socket.on("comanda-updated", refresh);
+    socket.on("new-order", refresh);
+
+    return () => {
+      socket.off("table-updated", refresh);
+      socket.off("order-updated", refresh);
+      socket.off("comanda-updated", refresh);
+      socket.off("new-order", refresh);
+    };
+  }, [socket, queryClient, selectedTable]);
 
   const {
     data: tables,
