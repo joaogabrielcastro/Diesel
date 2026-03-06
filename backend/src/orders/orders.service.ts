@@ -28,10 +28,15 @@ export class OrdersService {
         establishmentId,
         status: "OPEN",
       },
+      include: {
+        table: true,
+      },
     });
 
     if (!comanda) {
-      throw new NotFoundException("Comanda not found or already closed");
+      throw new BadRequestException(
+        "Não há nenhuma comanda aberta para esta mesa. Por favor, abra uma comanda antes de fazer o pedido.",
+      );
     }
 
     // Get products with prices

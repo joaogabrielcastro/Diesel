@@ -10,12 +10,10 @@ import {
 import { Server, Socket } from "socket.io";
 import { UseGuards } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
+import { ConfigService } from "@nestjs/config";
 
 @WebSocketGateway({
-  cors: {
-    origin: "*",
-    credentials: true,
-  },
+  cors: true, // Will use the main CORS configuration
   namespace: "/realtime",
 })
 export class RealtimeGateway
@@ -24,7 +22,10 @@ export class RealtimeGateway
   @WebSocketServer()
   server: Server;
 
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private configService: ConfigService,
+  ) {}
 
   async handleConnection(client: Socket) {
     try {

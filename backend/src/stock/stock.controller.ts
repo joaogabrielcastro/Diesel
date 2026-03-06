@@ -48,7 +48,11 @@ export class StockController {
   async getPredictions(@Request() req: any) {
     return this.stockService.getStockPredictions(req.user.establishmentId);
   }
-
+  // Explicit route for getting ingredient stock details
+  @Get("ingredient/:id")
+  async getIngredient(@Param("id") id: string, @Request() req) {
+    return this.stockService.getProductStock(req.user.establishmentId, id);
+  }
   @Get(":productId")
   async getByProduct(
     @Param("productId") productId: string,

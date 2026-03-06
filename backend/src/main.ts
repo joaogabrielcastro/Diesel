@@ -12,6 +12,10 @@ async function bootstrap() {
   const port = configService.get("PORT") || 3000;
   const corsOrigin = configService.get("CORS_ORIGIN") || "*";
 
+  // Parse CORS_ORIGIN - se tiver vírgulas, divide em array
+  const allowedOrigins =
+    corsOrigin === "*" ? "*" : corsOrigin.split(",").map((o) => o.trim());
+
   // Servir arquivos estáticos (uploads)
   app.useStaticAssets(join(__dirname, "..", "uploads"), {
     prefix: "/uploads/",
@@ -25,9 +29,9 @@ async function bootstrap() {
     }),
   );
 
-  // CORS
+  // CORS - configuração correta para múltiplas origens
   app.enableCors({
-    origin: corsOrigin,
+    origin: allowedOrigins,
     credentials: true,
   });
 
