@@ -11,15 +11,45 @@ export class StockService {
       orderBy: { name: "asc" },
     });
 
-    return ingredients.map((ingredient) => ({
+    // Buscar produtos com controle de estoque direto
+    const products = await this.prisma.product.findMany({
+      where: {
+        establishmentId,
+        stockControl: true,
+      },
+      include: {
+        category: true,
+      },
+      orderBy: { name: "asc" },
+    });
+
+    const ingredientItems = ingredients.map((ingredient) => ({
       id: ingredient.id,
       name: ingredient.name,
       unit: ingredient.unit,
+      ingredientType: (ingredient as any).ingredientType ?? "OUTRO",
       category: "Ingrediente",
       currentStock: Number(ingredient.currentStock),
       minStock: Number(ingredient.minStock),
       maxStock: Number(ingredient.minStock) * 3,
+      needsRestock:
+        Number(ingredient.currentStock) <= Number(ingredient.minStock),
     }));
+
+    const productItems = products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      unit: product.stockUnit || "un",
+      ingredientType: product.category?.name || "OUTRO",
+      category: product.category?.name || "Produto Pronto",
+      currentStock: Number(product.stockQuantity || 0),
+      minStock: Number(product.minStock || 0),
+      maxStock: Number(product.minStock || 0) * 3,
+      needsRestock:
+        Number(product.stockQuantity || 0) <= Number(product.minStock || 0),
+    }));
+
+    return [...ingredientItems, ...productItems];
   }
 
   async getLowStockProducts(establishmentId: string) {
@@ -28,7 +58,18 @@ export class StockService {
       orderBy: { currentStock: "asc" },
     });
 
-    return ingredients
+    const products = await this.prisma.product.findMany({
+      where: {
+        establishmentId,
+        stockControl: true,
+      },
+      include: {
+        category: true,
+      },
+      orderBy: { stockQuantity: "asc" },
+    });
+
+    const lowIngredients = ingredients
       .filter((i) => Number(i.currentStock) <= Number(i.minStock))
       .map((ingredient) => ({
         id: ingredient.id,
@@ -38,6 +79,19 @@ export class StockService {
         currentStock: Number(ingredient.currentStock),
         minStock: Number(ingredient.minStock),
       }));
+
+    const lowProducts = products
+      .filter((p) => Number(p.stockQuantity || 0) <= Number(p.minStock || 0))
+      .map((product) => ({
+        id: product.id,
+        name: product.name,
+        unit: product.stockUnit || "un",
+        category: product.category?.name || "Produto Pronto",
+        currentStock: Number(product.stockQuantity || 0),
+        minStock: Number(product.minStock || 0),
+      }));
+
+    return [...lowIngredients, ...lowProducts];
   }
 
   async getStockAlerts(establishmentId: string) {
@@ -45,10 +99,21 @@ export class StockService {
       where: { establishmentId },
     });
 
+    const products = await this.prisma.product.findMany({
+      where: {
+        establishmentId,
+        stockControl: true,
+      },
+      include: {
+        category: true,
+      },
+    });
+
     const critical: any[] = [];
     const warning: any[] = [];
     const attention: any[] = [];
 
+    // Check ingredients
     for (const ingredient of ingredients) {
       const current = Number(ingredient.currentStock);
       const min = Number(ingredient.minStock);
@@ -79,6 +144,41 @@ export class StockService {
           currentStock: current,
           minStock: min,
           category: "Ingrediente",
+        });
+      }
+    }
+
+    // Check products with direct stock control
+    for (const product of products) {
+      const current = Number(product.stockQuantity || 0);
+      const min = Number(product.minStock || 0);
+
+      if (current === 0) {
+        critical.push({
+          id: product.id,
+          name: product.name,
+          unit: product.stockUnit || "un",
+          currentStock: current,
+          minStock: min,
+          category: product.category?.name || "Produto Pronto",
+        });
+      } else if (min > 0 && current <= min * 0.5) {
+        warning.push({
+          id: product.id,
+          name: product.name,
+          unit: product.stockUnit || "un",
+          currentStock: current,
+          minStock: min,
+          category: product.category?.name || "Produto Pronto",
+        });
+      } else if (min > 0 && current <= min) {
+        attention.push({
+          id: product.id,
+          name: product.name,
+          unit: product.stockUnit || "un",
+          currentStock: current,
+          minStock: min,
+          category: product.category?.name || "Produto Pronto",
         });
       }
     }
@@ -262,6 +362,42 @@ export class StockService {
     });
 
     return movement;
+  }
+
+  async createIngredient(
+    establishmentId: string,
+    data: {
+      name: string;
+      unit: string;
+      minStock: number;
+      currentStock: number;
+      ingredientType?: string;
+    },
+  ) {
+    return this.prisma.ingredient.create({
+      data: {
+        establishmentId,
+        name: data.name,
+        unit: data.unit,
+        minStock: data.minStock,
+        currentStock: data.currentStock,
+        ...(data.ingredientType
+          ? ({ ingredientType: data.ingredientType } as any)
+          : {}),
+      },
+    });
+  }
+
+  async deleteIngredient(establishmentId: string, ingredientId: string) {
+    const ingredient = await this.prisma.ingredient.findFirst({
+      where: { id: ingredientId, establishmentId },
+    });
+
+    if (!ingredient) {
+      throw new Error("Ingrediente não encontrado");
+    }
+
+    return this.prisma.ingredient.delete({ where: { id: ingredientId } });
   }
 
   async updateProductStock(

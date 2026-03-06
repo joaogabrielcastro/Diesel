@@ -59,4 +59,23 @@ export class ProductsController {
   remove(@Request() req, @Param("id") id: string) {
     return this.productsService.remove(id, req.user.establishmentId);
   }
+
+  @Patch(":id/stock")
+  updateStock(
+    @Request() req,
+    @Param("id") id: string,
+    @Body() body: { quantity: number; operation: "ADD" | "SUBTRACT" | "SET" },
+  ) {
+    return this.productsService.updateStock(
+      id,
+      req.user.establishmentId,
+      body.quantity,
+      body.operation,
+    );
+  }
+
+  @Get("stock/low")
+  getLowStock(@Request() req) {
+    return this.productsService.getLowStockProducts(req.user.establishmentId);
+  }
 }

@@ -1,15 +1,46 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { authApi } from "../services/api";
 import { useAuthStore } from "../store/auth";
+import { useLanguageStore } from "../store/language";
+import axios from "axios";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export default function Login() {
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
-  const [email, setEmail] = useState("admin@demo.com");
-  const [password, setPassword] = useState("123456");
+  const { t } = useLanguageStore();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [establishmentInfo, setEstablishmentInfo] = useState<{
+    name: string;
+    logo: string | null;
+  }>({
+    name: "Diesel Bar",
+    logo: null,
+  });
+
+  // Busca informações públicas do estabelecimento ao carregar
+  useEffect(() => {
+    const fetchEstablishmentInfo = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/api/establishments/info`);
+        if (response.data) {
+          setEstablishmentInfo({
+            name: response.data.name || "Diesel Bar",
+            logo: response.data.logo,
+          });
+        }
+      } catch (err) {
+        console.log("Usando configuração padrão do estabelecimento");
+      }
+    };
+
+    fetchEstablishmentInfo();
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,25 +65,39 @@ export default function Login() {
       else if (role === "garcom" || role === "waiter") navigate("/tables");
       else navigate("/");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Erro ao fazer login");
+      setError(err.response?.data?.message || t("login.error"));
     } finally {
       setLoading(false);
     }
   };
 
+  // Define qual logo usar: do banco > arquivo estático > padrão
+  const logoSrc = establishmentInfo.logo
+    ? `${API_URL}/uploads/${establishmentInfo.logo}`
+    : "/logo.png";
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-dark">
       <div className="card w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary mb-2">
-            🍺 Diesel Bar
-          </h1>
-          <p className="text-gray-400">Painel Administrativo</p>
+          <img
+            src={logoSrc}
+            alt={establishmentInfo.name}
+            className="h-24 mx-auto mb-3 object-contain"
+            onError={(e) => {
+              // Fallback para logo padrão se houver erro
+              e.currentTarget.src = "/icon-192.png";
+            }}
+          />
+          <h1 className="text-2xl font-bold mb-2">{establishmentInfo.name}</h1>
+          <p className="text-gray-400">{t("login.panel")}</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Email</label>
+            <label className="block text-sm font-medium mb-2">
+              {t("login.email")}
+            </label>
             <input
               type="email"
               value={email}
@@ -63,7 +108,9 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Senha</label>
+            <label className="block text-sm font-medium mb-2">
+              {t("login.password")}
+            </label>
             <input
               type="password"
               value={password}
@@ -80,12 +127,8 @@ export default function Login() {
             disabled={loading}
             className="btn btn-primary w-full"
           >
-            {loading ? "Entrando..." : "Entrar"}
+            {loading ? t("login.loading") : t("login.submit")}
           </button>
-
-          <p className="text-center text-sm text-gray-400 mt-4">
-            Demo: admin@demo.com / 123456
-          </p>
         </form>
       </div>
     </div>

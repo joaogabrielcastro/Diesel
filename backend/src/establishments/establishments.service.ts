@@ -5,6 +5,19 @@ import { PrismaService } from "../prisma/prisma.service";
 export class EstablishmentsService {
   constructor(private prisma: PrismaService) {}
 
+  // Retorna informações públicas do primeiro estabelecimento (logo e nome)
+  async getPublicInfo() {
+    const establishment = await this.prisma.establishment.findFirst({
+      select: {
+        id: true,
+        name: true,
+        logo: true,
+      },
+    });
+
+    return establishment || { id: null, name: "Diesel Bar", logo: null };
+  }
+
   async findOne(id: string) {
     return this.prisma.establishment.findUnique({
       where: { id },
@@ -22,6 +35,7 @@ export class EstablishmentsService {
         cnpj: data.cnpj,
         phone: data.phone,
         address: data.address,
+        logo: data.logo,
       },
     });
   }

@@ -11,9 +11,11 @@ import {
 import { toast } from "sonner";
 import api from "../services/api";
 import { CardSkeleton, TableSkeleton } from "../components/LoadingSkeleton";
+import { useLanguageStore } from "../store/language";
 
 export default function Payments() {
   const queryClient = useQueryClient();
+  const { t } = useLanguageStore();
   const [selectedTable, setSelectedTable] = useState<any>(null);
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<
@@ -50,15 +52,35 @@ export default function Payments() {
       });
       return response.data;
     },
-    onSuccess: () => {
-      toast.success("Conta fechada com sucesso!");
-      queryClient.invalidateQueries({ queryKey: ["payments-active-tables"] });
+    onSuccess: async () => {
+      toast.success(t("payments.closeSuccess"));
+
+      // Invalida queries de pagamentos
+      queryClient.invalidateQueries({
+        queryKey: ["payments-active-tables"],
+      });
+
+      // Força refetch de todas as queries de relatórios
+      await queryClient.refetchQueries({
+        predicate: (query) => {
+          const key = query.queryKey[0] as string;
+          return [
+            "sales-report",
+            "revenue-report",
+            "dashboard-stats",
+            "orders-status",
+            "peak-hours",
+            "top-products",
+          ].includes(key);
+        },
+      });
+
       setSelectedTable(null);
       setShowCloseModal(false);
       setPaymentMethod(null);
     },
     onError: () => {
-      toast.error("Erro ao fechar conta");
+      toast.error(t("payments.closeError"));
     },
   });
 
@@ -71,7 +93,7 @@ export default function Payments() {
 
   const handleCloseAccount = () => {
     if (!paymentMethod) {
-      toast.error("Selecione um método de pagamento");
+      toast.error(t("payments.methodError"));
       return;
     }
 
@@ -85,10 +107,8 @@ export default function Payments() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Pagamentos</h1>
-          <p className="text-gray-400 mt-2">
-            Gerencie pagamentos e feche contas das mesas
-          </p>
+          <h1 className="text-3xl font-bold">{t("payments.title")}</h1>
+          <p className="text-gray-400 mt-2">{t("payments.subtitle")}</p>
         </div>
       </div>
 
@@ -104,7 +124,9 @@ export default function Payments() {
           <div className="card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Mesas Ativas</p>
+                <p className="text-gray-400 text-sm">
+                  {t("payments.activeTables")}
+                </p>
                 <p className="text-3xl font-bold mt-2">
                   {activeTablesData?.totalTables || 0}
                 </p>
@@ -118,7 +140,9 @@ export default function Payments() {
           <div className="card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Receita Total</p>
+                <p className="text-gray-400 text-sm">
+                  {t("payments.totalRevenue")}
+                </p>
                 <p className="text-3xl font-bold mt-2 text-green-500">
                   {formatCurrency(activeTablesData?.totalRevenue || 0)}
                 </p>
@@ -132,7 +156,9 @@ export default function Payments() {
           <div className="card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Ticket Médio</p>
+                <p className="text-gray-400 text-sm">
+                  {t("payments.averageTicket")}
+                </p>
                 <p className="text-3xl font-bold mt-2 text-orange-500">
                   {formatCurrency(
                     activeTablesData?.totalTables > 0
@@ -153,7 +179,9 @@ export default function Payments() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Lista de Mesas Ativas */}
         <div className="card">
-          <h2 className="text-xl font-bold mb-4">Mesas Ativas</h2>
+          <h2 className="text-xl font-bold mb-4">
+            {t("payments.activeTables")}
+          </h2>
 
           {loadingTables ? (
             <TableSkeleton rows={5} />
@@ -175,10 +203,12 @@ export default function Payments() {
                         <Receipt className="text-primary w-5 h-5" />
                       </div>
                       <div>
-                        <p className="font-bold">Mesa {table.tableNumber}</p>
+                        <p className="font-bold">
+                          {t("tables.table")} {table.tableNumber}
+                        </p>
                         <p className="text-sm text-gray-400">
-                          {table.openComandas} comanda(s) • {table.totalItems}{" "}
-                          itens
+                          {table.openComandas} {t("payments.items")} •{" "}
+                          {table.totalItems} {t("payments.items")}
                         </p>
                       </div>
                     </div>
@@ -194,7 +224,7 @@ export default function Payments() {
               {activeTablesData?.tables?.length === 0 && (
                 <div className="text-center py-8 text-gray-400">
                   <Receipt className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>Nenhuma mesa ativa no momento</p>
+                  <p>{t("payments.noTables")}</p>
                 </div>
               )}
             </div>
@@ -203,7 +233,9 @@ export default function Payments() {
 
         {/* Detalhes da Mesa Selecionada */}
         <div className="card">
-          <h2 className="text-xl font-bold mb-4">Detalhes da Conta</h2>
+          <h2 className="text-xl font-bold mb-4">
+            {t("payments.consumption")}
+          </h2>
 
           {!selectedTable ? (
             <div className="text-center py-12 text-gray-400">
@@ -217,7 +249,7 @@ export default function Payments() {
               {/* Header */}
               <div className="border-b border-gray-800 pb-4">
                 <h3 className="text-2xl font-bold">
-                  Mesa {tableDetails?.table?.number}
+                  {t("tables.table")} {tableDetails?.table?.number}
                 </h3>
                 <p className="text-sm text-gray-400">
                   {tableDetails?.openComandas} comanda(s) aberta(s)
@@ -226,7 +258,7 @@ export default function Payments() {
 
               {/* Items Breakdown */}
               <div className="max-h-64 overflow-y-auto">
-                <h4 className="font-bold mb-2">Itens Consumidos:</h4>
+                <h4 className="font-bold mb-2">{t("payments.consumption")}:</h4>
                 <div className="space-y-2">
                   {tableDetails?.itemsBreakdown?.map(
                     (item: any, idx: number) => (
@@ -248,7 +280,9 @@ export default function Payments() {
               {/* Total */}
               <div className="border-t border-gray-800 pt-4">
                 <div className="flex justify-between items-center mb-4">
-                  <span className="text-xl font-bold">Total:</span>
+                  <span className="text-xl font-bold">
+                    {t("payments.total")}:
+                  </span>
                   <span className="text-3xl font-bold text-green-500">
                     {formatCurrency(tableDetails?.totalAmount || 0)}
                   </span>
@@ -259,7 +293,7 @@ export default function Payments() {
                   className="btn btn-primary w-full flex items-center justify-center gap-2"
                 >
                   <Check size={20} />
-                  Fechar Conta
+                  {t("payments.close")}
                 </button>
               </div>
             </div>
@@ -271,18 +305,18 @@ export default function Payments() {
       {showCloseModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="bg-dark-light rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-2xl font-bold mb-4">Fechar Conta</h3>
+            <h3 className="text-2xl font-bold mb-4">{t("payments.close")}</h3>
 
             <div className="mb-6">
               <p className="text-gray-400 mb-2">
-                Mesa {tableDetails?.table?.number}
+                {t("tables.table")} {tableDetails?.table?.number}
               </p>
               <p className="text-3xl font-bold text-green-500">
                 {formatCurrency(tableDetails?.totalAmount || 0)}
               </p>
             </div>
 
-            <p className="font-bold mb-3">Forma de Pagamento:</p>
+            <p className="font-bold mb-3">{t("payments.method")}:</p>
             <div className="grid grid-cols-3 gap-3 mb-6">
               <button
                 className={`p-4 rounded-lg border-2 transition-all ${
@@ -293,7 +327,7 @@ export default function Payments() {
                 onClick={() => setPaymentMethod("CASH")}
               >
                 <Banknote className="w-8 h-8 mx-auto mb-2" />
-                <p className="text-sm">Dinheiro</p>
+                <p className="text-sm">{t("payments.cash")}</p>
               </button>
 
               <button
@@ -305,7 +339,7 @@ export default function Payments() {
                 onClick={() => setPaymentMethod("CARD")}
               >
                 <CreditCard className="w-8 h-8 mx-auto mb-2" />
-                <p className="text-sm">Cartão</p>
+                <p className="text-sm">{t("payments.card")}</p>
               </button>
 
               <button
@@ -317,7 +351,7 @@ export default function Payments() {
                 onClick={() => setPaymentMethod("PIX")}
               >
                 <Smartphone className="w-8 h-8 mx-auto mb-2" />
-                <p className="text-sm">PIX</p>
+                <p className="text-sm">{t("payments.pix")}</p>
               </button>
             </div>
 
@@ -330,7 +364,7 @@ export default function Payments() {
                 className="btn bg-gray-700 hover:bg-gray-600 flex-1 flex items-center justify-center gap-2"
               >
                 <X size={20} />
-                Cancelar
+                {t("common.cancel")}
               </button>
               <button
                 onClick={handleCloseAccount}
@@ -338,7 +372,9 @@ export default function Payments() {
                 className="btn btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Check size={20} />
-                {closeAccount.isPending ? "Fechando..." : "Confirmar"}
+                {closeAccount.isPending
+                  ? t("common.loading")
+                  : t("common.confirm")}
               </button>
             </div>
           </div>

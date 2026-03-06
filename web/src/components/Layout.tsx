@@ -8,13 +8,14 @@ import {
   LogOut,
   Warehouse,
   CreditCard,
-  Settings,
   Users as UsersIcon,
   Tag,
   Menu,
   X,
+  Globe,
 } from "lucide-react";
 import { useAuthStore } from "../store/auth";
+import { useLanguageStore } from "../store/language";
 import { useOrderNotifications } from "../services/websocket";
 import { useState, useEffect } from "react";
 
@@ -22,6 +23,7 @@ export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuthStore();
+  const { language, setLanguage, t } = useLanguageStore();
   const [unreadCount, setUnreadCount] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -63,39 +65,53 @@ export default function Layout() {
   };
 
   const allNavItems = [
-    { to: "/", icon: Home, label: "Dashboard", roles: ["admin"] },
+    { to: "/", icon: Home, label: t("nav.dashboard"), roles: ["admin"] },
     {
       to: "/kitchen",
       icon: ChefHat,
-      label: "Cozinha",
+      label: t("nav.kitchen"),
       roles: ["admin", "cozinha", "kitchen"],
     },
-    { to: "/products", icon: Package, label: "Produtos", roles: ["admin"] },
-    { to: "/categories", icon: Tag, label: "Categorias", roles: ["admin"] },
+    {
+      to: "/products",
+      icon: Package,
+      label: t("nav.products"),
+      roles: ["admin", "garcom", "waiter"],
+    },
+    {
+      to: "/categories",
+      icon: Tag,
+      label: t("nav.categories"),
+      roles: ["admin"],
+    },
     {
       to: "/tables",
       icon: Table,
-      label: "Mesas",
+      label: t("nav.tables"),
       roles: ["admin", "garcom", "waiter"],
     },
     {
       to: "/payments",
       icon: CreditCard,
-      label: "Pagamentos",
+      label: t("nav.payments"),
       roles: ["admin", "garcom", "waiter"],
     },
-    { to: "/reports", icon: BarChart, label: "Relatórios", roles: ["admin"] },
-    { to: "/stock", icon: Warehouse, label: "Estoque", roles: ["admin"] },
     {
-      to: "/settings",
-      icon: Settings,
-      label: "Configurações",
+      to: "/reports",
+      icon: BarChart,
+      label: t("nav.reports"),
       roles: ["admin"],
+    },
+    {
+      to: "/stock",
+      icon: Warehouse,
+      label: t("nav.stock"),
+      roles: ["admin", "cozinha", "kitchen"],
     },
     {
       to: "/users",
       icon: UsersIcon,
-      label: "Usuários",
+      label: t("nav.users"),
       roles: ["admin"],
     },
   ];
@@ -180,17 +196,32 @@ export default function Layout() {
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-800 bg-dark-light">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-3">
             <div className="truncate">
               <p className="font-medium truncate">{user?.name}</p>
               <p className="text-sm text-gray-400">{user?.role}</p>
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setLanguage(language === "pt" ? "en" : "pt")}
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-sm"
+              title={
+                language === "pt" ? "Switch to English" : "Mudar para Português"
+              }
+            >
+              <Globe size={16} />
+              <span className="font-medium">
+                {language === "pt" ? "EN" : "PT"}
+              </span>
+            </button>
             <button
               onClick={handleLogout}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-red-400"
-              title="Sair"
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-800 hover:bg-red-900/30 hover:text-red-400 rounded-lg transition-colors text-sm"
+              title={t("nav.logout")}
             >
-              <LogOut size={20} />
+              <LogOut size={16} />
+              <span className="font-medium">{t("nav.logout")}</span>
             </button>
           </div>
         </div>

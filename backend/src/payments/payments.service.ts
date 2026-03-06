@@ -213,7 +213,19 @@ export class PaymentsService {
           });
         });
 
-        // 1. Criar registro de pagamento
+        // 1. Marcar todos os pedidos da comanda como DELIVERED (alimenta relatórios)
+        await tx.order.updateMany({
+          where: {
+            comandaId: comanda.id,
+            status: { not: "CANCELLED" },
+          },
+          data: {
+            status: "DELIVERED",
+            deliveredAt: new Date(),
+          },
+        });
+
+        // 2. Criar registro de pagamento
         await tx.payment.create({
           data: {
             comandaId: comanda.id,
@@ -224,7 +236,7 @@ export class PaymentsService {
           },
         });
 
-        // 2. Atualizar comanda para PAGA e fechar
+        // 3. Atualizar comanda para PAGA e fechar
         await tx.comanda.update({
           where: { id: comanda.id },
           data: {
@@ -235,7 +247,7 @@ export class PaymentsService {
         });
       }
 
-      // 3. Liberar mesa
+      // 4. Liberar mesa
       await tx.table.update({
         where: { id: tableId },
         data: {

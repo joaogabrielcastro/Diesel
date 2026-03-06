@@ -99,6 +99,8 @@ export const stockApi = {
   createMovement: (data: any) => api.post("/stock/movement", data),
   updateStock: (productId: string, data: any) =>
     api.patch(`/stock/${productId}`, data),
+  createIngredient: (data: any) => api.post("/stock/ingredient", data),
+  deleteIngredient: (id: string) => api.delete(`/stock/ingredient/${id}`),
 };
 
 export default api;

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, X, Pencil, Trash2, AlertCircle, Tag } from "lucide-react";
 import { toast } from "sonner";
 import { categoriesApi } from "../services/api";
+import { useLanguageStore } from "../store/language";
 
 const EMOJI_LIST = [
   "🍺",
@@ -35,6 +36,7 @@ function CategoryModal({
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
+  const { t } = useLanguageStore();
   const isEdit = !!category;
 
   const [name, setName] = useState(category?.name ?? "");
@@ -46,11 +48,11 @@ function CategoryModal({
         ? categoriesApi.update(category.id, { name, icon })
         : categoriesApi.create({ name, icon }),
     onSuccess: () => {
-      toast.success(isEdit ? "Categoria atualizada!" : "Categoria criada!");
+      toast.success(isEdit ? t("categories.updated") : t("categories.created"));
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       onClose();
     },
-    onError: () => toast.error("Erro ao salvar categoria"),
+    onError: () => toast.error(t("categories.error")),
   });
 
   return (
@@ -58,7 +60,9 @@ function CategoryModal({
       <div className="bg-gray-900 rounded-xl w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-bold">
-            {isEdit ? "Editar Categoria" : "Nova Categoria"}
+            {isEdit
+              ? t("categories.editCategory")
+              : t("categories.newCategory")}
           </h2>
           <button
             onClick={onClose}
@@ -78,7 +82,9 @@ function CategoryModal({
 
           {/* Emoji picker */}
           <div>
-            <label className="block text-sm font-medium mb-2">Ícone</label>
+            <label className="block text-sm font-medium mb-2">
+              {t("categories.icon")}
+            </label>
             <div className="grid grid-cols-10 gap-1">
               {EMOJI_LIST.map((e) => (
                 <button
@@ -105,7 +111,9 @@ function CategoryModal({
 
           {/* Name */}
           <div>
-            <label className="block text-sm font-medium mb-2">Nome</label>
+            <label className="block text-sm font-medium mb-2">
+              {t("categories.name")}
+            </label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -121,14 +129,14 @@ function CategoryModal({
               onClick={onClose}
               className="btn flex-1 bg-gray-700 hover:bg-gray-600"
             >
-              Cancelar
+              {t("common.cancel")}
             </button>
             <button
               onClick={() => save.mutate()}
               disabled={!name.trim() || save.isPending}
               className="btn btn-primary flex-1 disabled:opacity-50"
             >
-              {save.isPending ? "Salvando..." : isEdit ? "Salvar" : "Criar"}
+              {save.isPending ? t("common.loading") : t("common.save")}
             </button>
           </div>
         </div>
@@ -139,6 +147,7 @@ function CategoryModal({
 
 export default function Categories() {
   const queryClient = useQueryClient();
+  const { t } = useLanguageStore();
   const [modal, setModal] = useState<"new" | any | null>(null);
 
   const {
@@ -153,11 +162,10 @@ export default function Categories() {
   const deleteCategory = useMutation({
     mutationFn: (id: string) => categoriesApi.delete(id),
     onSuccess: () => {
-      toast.success("Categoria removida");
+      toast.success(t("categories.deleted"));
       queryClient.invalidateQueries({ queryKey: ["categories"] });
     },
-    onError: () =>
-      toast.error("Não foi possível remover — pode haver produtos vinculados"),
+    onError: () => toast.error(t("categories.deleteError")),
   });
 
   const handleDelete = (cat: any) => {
@@ -175,7 +183,7 @@ export default function Categories() {
       <div className="p-8">
         <div className="card bg-red-900/20 border border-red-700 flex items-center gap-3">
           <AlertCircle className="text-red-500" size={24} />
-          <p>Erro ao carregar categorias</p>
+          <p>{t("common.error")}</p>
         </div>
       </div>
     );
@@ -186,7 +194,7 @@ export default function Categories() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Tag size={28} /> Categorias
+            <Tag size={28} /> {t("categories.title")}
           </h1>
           <p className="text-gray-400 mt-1">
             Organize os produtos por categorias
@@ -196,7 +204,7 @@ export default function Categories() {
           onClick={() => setModal("new")}
           className="btn btn-primary flex items-center gap-2"
         >
-          <Plus size={18} /> Nova Categoria
+          <Plus size={18} /> {t("categories.newCategory")}
         </button>
       </div>
 
@@ -212,7 +220,7 @@ export default function Categories() {
             <div className="card text-center py-16 text-gray-400">
               <p className="text-5xl mb-4">🏷️</p>
               <p className="text-lg font-medium">
-                Nenhuma categoria cadastrada
+                {t("categories.noCategories")}
               </p>
               <p className="text-sm mt-2">
                 Clique em "Nova Categoria" para começar

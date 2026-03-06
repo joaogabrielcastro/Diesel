@@ -2,6 +2,20 @@ import { Controller, Get, Query, UseGuards, Request } from "@nestjs/common";
 import { ReportsService } from "./reports.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 
+/** Retorna a data no início do dia (00:00:00.000) */
+function startOf(dateStr: string): Date {
+  const d = new Date(dateStr);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+/** Retorna a data no fim do dia (23:59:59.999) — inclui pedidos do dia inteiro */
+function endOf(dateStr: string): Date {
+  const d = new Date(dateStr);
+  d.setHours(23, 59, 59, 999);
+  return d;
+}
+
 @Controller("reports")
 @UseGuards(JwtAuthGuard)
 export class ReportsController {
@@ -15,8 +29,8 @@ export class ReportsController {
   ) {
     return this.reportsService.getSalesReport(
       req.user.establishmentId,
-      new Date(startDate),
-      new Date(endDate),
+      startOf(startDate),
+      endOf(endDate),
     );
   }
 
@@ -29,8 +43,8 @@ export class ReportsController {
   ) {
     return this.reportsService.getTopSellingProducts(
       req.user.establishmentId,
-      new Date(startDate),
-      new Date(endDate),
+      startOf(startDate),
+      endOf(endDate),
       parseInt(limit) || 10,
     );
   }
@@ -44,8 +58,8 @@ export class ReportsController {
   ) {
     return this.reportsService.getRevenueReport(
       req.user.establishmentId,
-      new Date(startDate),
-      new Date(endDate),
+      startOf(startDate),
+      endOf(endDate),
       groupBy || "day",
     );
   }
@@ -58,8 +72,8 @@ export class ReportsController {
   ) {
     return this.reportsService.getOrdersStatusReport(
       req.user.establishmentId,
-      new Date(startDate),
-      new Date(endDate),
+      startOf(startDate),
+      endOf(endDate),
     );
   }
 
@@ -71,8 +85,8 @@ export class ReportsController {
   ) {
     return this.reportsService.getPeakHours(
       req.user.establishmentId,
-      new Date(startDate),
-      new Date(endDate),
+      startOf(startDate),
+      endOf(endDate),
     );
   }
 

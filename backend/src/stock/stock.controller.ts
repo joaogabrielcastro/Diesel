@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
   Param,
   Patch,
@@ -57,6 +58,22 @@ export class StockController {
       req.user.establishmentId,
       productId,
     );
+  }
+
+  @Post("ingredient")
+  async createIngredient(@Body() data: any, @Request() req: any) {
+    return this.stockService.createIngredient(req.user.establishmentId, {
+      name: data.name,
+      unit: data.unit,
+      minStock: Number(data.minStock),
+      currentStock: Number(data.currentStock),
+      ingredientType: data.ingredientType || "OUTRO",
+    });
+  }
+
+  @Delete("ingredient/:id")
+  async deleteIngredient(@Param("id") id: string, @Request() req: any) {
+    return this.stockService.deleteIngredient(req.user.establishmentId, id);
   }
 
   @Post("movement")

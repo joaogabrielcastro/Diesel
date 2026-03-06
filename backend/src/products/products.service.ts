@@ -123,4 +123,99 @@ export class ProductsService {
       take: 20,
     });
   }
+
+  /**
+   * Atualiza o estoque de um produto (entrada/saída manual)
+   */
+  async updateStock(
+    id: string,
+    establishmentId: string,
+    quantity: number,
+    operation: "ADD" | "SUBTRACT" | "SET",
+  ) {
+    const product = await this.findOne(id, establishmentId);
+
+    if (!product.stockControl) {
+      throw new Error("Este produto não possui controle de estoque direto");
+    }
+
+    let newQuantity = Number(product.stockQuantity) || 0;
+
+    switch (operation) {
+      case "ADD":
+        newQuantity += quantity;
+        break;
+      case "SUBTRACT":
+        newQuantity -= quantity;
+        if (newQuantity < 0) newQuantity = 0;
+        break;
+      case "SET":
+        newQuantity = quantity;
+        break;
+    }
+
+    return this.prisma.product.update({
+      where: { id },
+      data: {
+        stockQuantity: newQuantity,
+      },
+      include: {
+        category: true,
+      },
+    });
+  }
+
+  /**
+   * Dá baixa no estoque de produtos com controle direto
+   * Chamado quando um pedido é entregue
+   */
+  async decreaseStock(productId: string, quantity: number) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+    });
+
+    if (!product || !product.stockControl) {
+      return; // Não faz nada se produto não controla estoque
+    }
+
+    const currentStock = Number(product.stockQuantity) || 0;
+    const newStock = Math.max(0, currentStock - quantity);
+
+    await this.prisma.product.update({
+      where: { id: productId },
+      data: {
+        stockQuantity: newStock,
+      },
+    });
+
+    // TODO: Emitir alerta via WebSocket se estoque abaixo do mínimo
+    if (product.minStock && newStock < Number(product.minStock)) {
+      console.log(
+        `⚠️ ALERTA: Estoque baixo de ${product.name} (${newStock} ${product.stockUnit})`,
+      );
+    }
+  }
+
+  /**
+   * Lista produtos com estoque baixo
+   */
+  async getLowStockProducts(establishmentId: string) {
+    const products = await this.prisma.product.findMany({
+      where: {
+        establishmentId,
+        active: true,
+        stockControl: true,
+      },
+      include: {
+        category: true,
+      },
+    });
+
+    return products.filter((product) => {
+      if (!product.minStock) return false;
+      const current = Number(product.stockQuantity) || 0;
+      const min = Number(product.minStock);
+      return current <= min;
+    });
+  }
 }

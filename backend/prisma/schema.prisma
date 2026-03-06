@@ -190,6 +190,13 @@ model Product {
   code            String?         // Código interno (ex: 101)
   preparationTime Int?            @map("preparation_time") // Em minutos
   active          Boolean         @default(true)
+  
+  // Controle de estoque direto (para produtos prontos: cerveja, água, etc)
+  stockControl    Boolean         @default(false) @map("stock_control") // Se controla estoque direto
+  stockQuantity   Decimal?        @default(0) @map("stock_quantity") @db.Decimal(10, 2) // Quantidade em estoque
+  stockUnit       String?         @map("stock_unit") // unidade, caixa, litro, etc
+  minStock        Decimal?        @map("min_stock") @db.Decimal(10, 2) // Estoque mínimo
+  
   createdAt       DateTime        @default(now()) @map("created_at")
   updatedAt       DateTime        @updatedAt @map("updated_at")
   
@@ -208,6 +215,7 @@ model Ingredient {
   establishmentId String          @map("establishment_id")
   name            String
   unit            String          // unidade (kg, L, unidade)
+  ingredientType  String          @default("OUTRO") @map("ingredient_type") // ALIMENTO, BEBIDA, OUTRO
   minStock        Decimal         @map("min_stock") @db.Decimal(10, 2)
   currentStock    Decimal         @map("current_stock") @db.Decimal(10, 2)
   createdAt       DateTime        @default(now()) @map("created_at")

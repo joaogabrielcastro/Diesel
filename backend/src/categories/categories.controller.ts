@@ -36,4 +36,9 @@ export class CategoriesController {
   remove(@Param("id") id: string) {
     return this.categoriesService.delete(id);
   }
+
+  @Delete()
+  removeAll(@Request() req) {
+    return this.categoriesService.deleteAll(req.user.establishmentId);
+  }
 }

@@ -11,11 +11,12 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { usersApi } from "../services/api";
+import { useLanguageStore } from "../store/language";
 
-const ROLES: { value: string; label: string }[] = [
-  { value: "admin", label: "Administrador" },
-  { value: "garcom", label: "Garçom" },
-  { value: "cozinha", label: "Cozinha" },
+const ROLES = [
+  { value: "admin", label: "users.admin" as const },
+  { value: "garcom", label: "users.waiter" as const },
+  { value: "cozinha", label: "users.kitchen" as const },
 ];
 
 const ROLE_BADGE: Record<string, string> = {
@@ -36,6 +37,7 @@ const normalizeRole = (role?: string) => {
 
 function UserModal({ user, onClose }: { user?: any; onClose: () => void }) {
   const queryClient = useQueryClient();
+  const { t } = useLanguageStore();
   const isEdit = !!user;
 
   const [form, setForm] = useState({
@@ -56,12 +58,12 @@ function UserModal({ user, onClose }: { user?: any; onClose: () => void }) {
           })
         : usersApi.create(form),
     onSuccess: () => {
-      toast.success(isEdit ? "Usuário atualizado!" : "Usuário criado!");
+      toast.success(isEdit ? t("users.updated") : t("users.created"));
       queryClient.invalidateQueries({ queryKey: ["users"] });
       onClose();
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || "Erro ao salvar usuário");
+      toast.error(err?.response?.data?.message || t("users.error"));
     },
   });
 
@@ -72,7 +74,7 @@ function UserModal({ user, onClose }: { user?: any; onClose: () => void }) {
       <div className="bg-gray-900 rounded-xl w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-bold">
-            {isEdit ? "Editar Usuário" : "Novo Usuário"}
+            {isEdit ? t("users.editUser") : t("users.newUser")}
           </h2>
           <button
             onClick={onClose}
@@ -83,7 +85,9 @@ function UserModal({ user, onClose }: { user?: any; onClose: () => void }) {
         </div>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Nome</label>
+            <label className="block text-sm font-medium mb-1">
+              {t("users.name")}
+            </label>
             <input
               value={form.name}
               onChange={(e) => set("name", e.target.value)}
@@ -93,7 +97,9 @@ function UserModal({ user, onClose }: { user?: any; onClose: () => void }) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">E-mail</label>
+            <label className="block text-sm font-medium mb-1">
+              {t("users.email")}
+            </label>
             <input
               type="email"
               value={form.email}
@@ -104,7 +110,7 @@ function UserModal({ user, onClose }: { user?: any; onClose: () => void }) {
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">
-              {isEdit ? "Nova Senha (deixe vazio para manter)" : "Senha"}
+              {isEdit ? t("users.passwordOptional") : t("users.password")}
             </label>
             <input
               type="password"
@@ -115,7 +121,9 @@ function UserModal({ user, onClose }: { user?: any; onClose: () => void }) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Cargo</label>
+            <label className="block text-sm font-medium mb-1">
+              {t("users.role")}
+            </label>
             <select
               value={form.role}
               onChange={(e) => set("role", e.target.value)}
@@ -123,7 +131,7 @@ function UserModal({ user, onClose }: { user?: any; onClose: () => void }) {
             >
               {ROLES.map((r) => (
                 <option key={r.value} value={r.value}>
-                  {r.label}
+                  {t(r.label)}
                 </option>
               ))}
             </select>
@@ -133,7 +141,7 @@ function UserModal({ user, onClose }: { user?: any; onClose: () => void }) {
               onClick={onClose}
               className="btn flex-1 bg-gray-700 hover:bg-gray-600"
             >
-              Cancelar
+              {t("common.cancel")}
             </button>
             <button
               onClick={() => save.mutate()}
@@ -145,7 +153,7 @@ function UserModal({ user, onClose }: { user?: any; onClose: () => void }) {
               }
               className="btn btn-primary flex-1 disabled:opacity-50"
             >
-              {save.isPending ? "Salvando..." : isEdit ? "Salvar" : "Criar"}
+              {save.isPending ? t("common.loading") : t("common.save")}
             </button>
           </div>
         </div>
@@ -156,6 +164,7 @@ function UserModal({ user, onClose }: { user?: any; onClose: () => void }) {
 
 export default function Users() {
   const queryClient = useQueryClient();
+  const { t } = useLanguageStore();
   const [modal, setModal] = useState<"create" | any | null>(null);
 
   const {
@@ -170,7 +179,7 @@ export default function Users() {
   const toggleActive = useMutation({
     mutationFn: (id: string) => usersApi.toggleActive(id),
     onSuccess: () => {
-      toast.success("Status atualizado");
+      toast.success(t("users.updated"));
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
@@ -178,10 +187,10 @@ export default function Users() {
   const deleteUser = useMutation({
     mutationFn: (id: string) => usersApi.delete(id),
     onSuccess: () => {
-      toast.success("Usuário removido");
+      toast.success(t("users.deleted"));
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
-    onError: () => toast.error("Erro ao remover usuário"),
+    onError: () => toast.error(t("users.deleteError")),
   });
 
   const handleDelete = (user: any) => {
@@ -194,7 +203,7 @@ export default function Users() {
       <div className="p-8">
         <div className="card bg-red-900/20 border border-red-700 flex items-center gap-3">
           <AlertCircle className="text-red-500" size={24} />
-          <p>Erro ao carregar usuários</p>
+          <p>{t("common.error")}</p>
         </div>
       </div>
     );
@@ -205,7 +214,7 @@ export default function Users() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <UserCog size={30} /> Usuários
+            <UserCog size={30} /> {t("users.title")}
           </h1>
           <p className="text-gray-400 mt-1">
             Gerencie os funcionários do estabelecimento
@@ -215,7 +224,7 @@ export default function Users() {
           onClick={() => setModal("create")}
           className="btn btn-primary flex items-center gap-2"
         >
-          <Plus size={18} /> Novo Usuário
+          <Plus size={18} /> {t("users.newUser")}
         </button>
       </div>
 
@@ -230,18 +239,18 @@ export default function Users() {
           <table className="w-full">
             <thead className="border-b border-gray-800">
               <tr className="text-left text-sm text-gray-400">
-                <th className="px-5 py-4">Nome</th>
-                <th className="px-5 py-4">E-mail</th>
-                <th className="px-5 py-4">Cargo</th>
-                <th className="px-5 py-4">Status</th>
-                <th className="px-5 py-4 text-right">Ações</th>
+                <th className="px-5 py-4">{t("users.name")}</th>
+                <th className="px-5 py-4">{t("users.email")}</th>
+                <th className="px-5 py-4">{t("users.role")}</th>
+                <th className="px-5 py-4">{t("tables.status")}</th>
+                <th className="px-5 py-4 text-right">{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
               {users?.length === 0 && (
                 <tr>
                   <td colSpan={5} className="text-center py-12 text-gray-400">
-                    Nenhum usuário cadastrado
+                    {t("users.noUsers")}
                   </td>
                 </tr>
               )}
@@ -258,8 +267,10 @@ export default function Users() {
                     <span
                       className={`px-2 py-0.5 rounded-full text-xs font-medium ${ROLE_BADGE[user.role] ?? "bg-gray-700"}`}
                     >
-                      {ROLES.find((r) => r.value === normalizeRole(user.role))
-                        ?.label ?? user.role}
+                      {t(
+                        ROLES.find((r) => r.value === normalizeRole(user.role))
+                          ?.label ?? user.role,
+                      )}
                     </span>
                   </td>
                   <td className="px-5 py-4">
@@ -269,7 +280,7 @@ export default function Users() {
                       <span
                         className={`w-2 h-2 rounded-full ${user.active ? "bg-green-400" : "bg-gray-500"}`}
                       />
-                      {user.active ? "Ativo" : "Inativo"}
+                      {user.active ? t("users.active") : t("users.inactive")}
                     </span>
                   </td>
                   <td className="px-5 py-4 text-right">

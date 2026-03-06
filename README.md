@@ -1,101 +1,274 @@
-# 🍺 Diesel Bar - Sistema SaaS para Gestão de Bares
+# 🍺 Diesel Bar - Sistema de Gestão para Restaurantes e Bares
 
-Sistema completo de gestão para bares, restaurantes e casas noturnas com foco em mobile-first, tempo real e modo offline.
+Sistema completo de gestão para restaurantes, bares e lanchonetes com controle de pedidos em tempo real, gestão de estoque, relatórios financeiros e interface bilíngue (Português/Inglês).
 
-## 🚀 Tecnologias
+## ✨ Funcionalidades Principais
+
+### 🎯 Gestão Operacional
+
+- **Controle de Mesas** - Gerenciamento visual do status de todas as mesas
+- **Pedidos em Tempo Real** - Sistema de pedidos com WebSocket para atualizações instantâneas
+- **Comandas Digitais** - Abertura, adição de itens e fechamento de comandas
+- **Gestão de Cozinha** - Visualização de pedidos pendentes com controle de status
+
+### 💰 Financeiro
+
+- **Múltiplas Formas de Pagamento** - Dinheiro, Cartão (Crédito/Débito) e PIX
+- **Relatórios Detalhados** - Faturamento diário, produtos mais vendidos, horários de pico
+- **Dashboard em Tempo Real** - Métricas atualizadas automaticamente
+- **Histórico Completo** - Registro de todas as transações e pedidos
+
+### 📦 Estoque
+
+- **Controle de Ingredientes** - Cadastro de ingredientes por tipo (Alimento, Bebida, Outro)
+- **Alertas Inteligentes** - Notificações de estoque crítico, baixo e acabando
+- **Movimentações** - Registro de entradas e saídas com motivos
+- **Previsões de Consumo** - Análise de consumo para planejamento de compras
+
+### 👥 Gestão de Usuários
+
+- **Múltiplos Perfis**
+  - **Admin**: Acesso completo ao sistema
+  - **Garçom**: Mesas, pedidos e pagamentos
+  - **Cozinha**: Visualização e controle de pedidos
+- **Controle de Permissões** - Acesso baseado em perfil
+- **Multi-usuário** - Vários usuários trabalhando simultaneamente
+
+### 🌐 Internacionalização
+
+- **Português e Inglês** - Interface completamente traduzida
+- **Troca em Tempo Real** - Alternância de idioma sem reload
+- **Todos os Perfis** - Admin, garçom e cozinha podem escolher seu idioma
+
+## 🛠️ Tecnologias Utilizadas
 
 ### Backend
 
-- Node.js 20+ com NestJS
-- TypeScript
-- PostgreSQL + Prisma ORM
-- Redis para cache e sessões
-- Socket.io para real-time
-- Bull para filas
-- JWT para autenticação
+- **NestJS** - Framework Node.js robusto e escalável
+- **Prisma ORM** - ORM moderno e type-safe
+- **PostgreSQL** - Banco de dados relacional
+- **WebSocket** - Comunicação em tempo real
+- **JWT** - Autenticação segura
+- **bcryptjs** - Hash de senhas
 
-### Mobile (Garçom/Cassino)
+### Frontend
 
-- React Native + Expo
-- TypeScript
-- TanStack Query
-- Zustand para state
-- Socket.io client
-
-### Web Admin
-
-- React 18 + Vite
-- TypeScript
-- TanStack Query + Table
-- Tailwind CSS + shadcn/ui
-- Socket.io client
+- **React 18** - Biblioteca UI moderna
+- **TypeScript** - Type safety em todo o código
+- **Vite** - Build tool ultra-rápido
+- **TanStack Query** - Gerenciamento de estado servidor
+- **Zustand** - Gerenciamento de estado cliente
+- **Recharts** - Gráficos e visualizações
+- **Tailwind CSS** - Estilização utility-first
+- **Socket.io Client** - WebSocket client
 
 ## 📁 Estrutura do Projeto
 
 ```
-diesel-bar/
-├── backend/          # API NestJS
-├── mobile/           # App React Native
-├── web/              # Dashboard Admin
-├── docs/             # Documentação
-└── docker/           # Docker configs
+diesel/
+├── backend/                 # API NestJS
+│   ├── src/
+│   │   ├── auth/           # Autenticação JWT
+│   │   ├── users/          # Gestão de usuários
+│   │   ├── establishments/ # Estabelecimentos
+│   │   ├── products/       # Produtos do cardápio
+│   │   ├── categories/     # Categorias de produtos
+│   │   ├── tables/         # Controle de mesas
+│   │   ├── comandas/       # Sistema de comandas
+│   │   ├── orders/         # Pedidos
+│   │   ├── payments/       # Processamento de pagamentos
+│   │   ├── stock/          # Gestão de estoque
+│   │   └── reports/        # Relatórios e analytics
+│   └── prisma/
+│       ├── schema.prisma   # Schema do banco
+│       └── seed.ts         # Dados iniciais
+│
+├── web/                    # Frontend React
+│   ├── src/
+│   │   ├── components/     # Componentes reutilizáveis
+│   │   ├── pages/          # Páginas da aplicação
+│   │   ├── services/       # API clients e WebSocket
+│   │   ├── store/          # Zustand stores
+│   │   ├── locales/        # Traduções PT/EN
+│   │   └── hooks/          # Custom hooks
+│   └── public/
+│
+├── setup.bat               # Script de instalação (Windows)
+├── reset-database.bat      # Script para resetar BD
+└── SETUP.md               # Guia de instalação completo
 ```
 
-## 🏁 Quick Start
+## 🚀 Instalação Rápida
 
-### Requisitos
+### Pré-requisitos
 
-- Node.js 20+
-- PostgreSQL 15+
-- Redis 7+
-- Docker (opcional)
+- Node.js 18+
+- PostgreSQL 14+
+- npm 9+
 
-### Instalação
+### 1. Clone o repositório
 
 ```bash
-# Clonar e instalar dependências
-npm install
+git clone <repository-url>
+cd diesel
+```
 
-# Setup backend
+### 2. Configure o banco de dados
+
+```sql
+CREATE DATABASE diesel_bar;
+```
+
+### 3. Configure as variáveis de ambiente
+
+**Backend** - Crie `backend/.env`:
+
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/diesel_bar"
+JWT_SECRET="your-super-secret-jwt-key-change-in-production"
+PORT=3000
+```
+
+**Frontend** - Crie `web/.env`:
+
+```env
+VITE_API_URL=http://localhost:3000
+VITE_WS_URL=ws://localhost:3000
+```
+
+### 4. Execute o script de instalação
+
+**Windows:**
+
+```bash
+setup.bat
+```
+
+**Linux/Mac:**
+
+```bash
+# Backend
 cd backend
 npm install
-cp .env.example .env
-npx prisma generate
-npx prisma migrate dev
+npm run setup
 
-# Iniciar backend
+# Frontend (em outro terminal)
+cd web
+npm install
+```
+
+### 5. Inicie a aplicação
+
+**Backend:**
+
+```bash
+cd backend
 npm run start:dev
+```
 
-# Setup mobile
-cd ../mobile
-npm install
-npx expo start
+**Frontend:**
 
-# Setup web
-cd ../web
-npm install
+```bash
+cd web
 npm run dev
 ```
 
-## 📖 Documentação
+Acesse: http://localhost:5173
 
-- [Arquitetura](docs/ARCHITECTURE.md)
-- [API Documentation](docs/API.md)
-- [Database Schema](docs/DATABASE.md)
-- [Deployment](docs/DEPLOYMENT.md)
+## 🔄 Resetar Banco de Dados
 
-## 🎯 Funcionalidades
+Para limpar todos os dados e recomeçar:
 
-- ✅ Pedidos em tempo real
-- ✅ Gestão de mesas e comandas
-- ✅ Controle de estoque
-- ✅ Painel da cozinha (KDS)
-- ✅ Sistema de cassino
-- ✅ Modo offline
-- ✅ Múltiplas formas de pagamento
-- ✅ Relatórios e analytics
-- ✅ Multi-tenant
+**Windows:**
+
+```bash
+reset-database.bat
+```
+
+**Linux/Mac:**
+
+```bash
+cd backend
+npm run db:fresh
+```
+
+## 📖 Documentação Completa
+
+Consulte [SETUP.md](SETUP.md) para instruções detalhadas de instalação, configuração e troubleshooting.
+
+## 🎨 Features Destacadas
+
+### Dashboard Inteligente
+
+- Métricas em tempo real (pedidos hoje, mesas ativas, faturamento)
+- Gráficos de crescimento
+- Lista de pedidos recentes com status
+- Visualização do status de todas as mesas
+
+### Sistema de Pedidos
+
+- Interface intuitiva para seleção de produtos
+- Carrinho de compras com cálculo automático
+- Observações personalizadas
+- Validação de estoque em tempo real
+- Notificações para a cozinha via WebSocket
+
+### Relatórios Avançados
+
+- Faturamento diário com gráficos
+- Top produtos mais vendidos
+- Análise de horários de pico
+- Status dos pedidos em gráfico de pizza
+- Detalhamento por produto com categoria
+- Filtros por período (hoje, semana, mês, customizado)
+
+### Gestão de Estoque Profissional
+
+- Três níveis de alerta (Crítico, Baixo, Acabando)
+- Categorização por tipo (Alimento, Bebida, Outro)
+- Movimentações rastreáveis
+- Previsão de consumo baseada em histórico
+- Integração com pedidos para baixa automática
+
+## 🔒 Segurança
+
+- Autenticação JWT com refresh tokens
+- Senhas hasheadas com bcrypt
+- Validação de inputs em todas as rotas
+- Rate limiting para prevenir abuse
+- CORS configurado
+- SQL Injection protection via Prisma
+
+## 📱 Responsividade
+
+Interface totalmente responsiva que funciona perfeitamente em:
+
+- Desktop (1920x1080+)
+- Tablets (768x1024)
+- Smartphones (375x667)
+
+## 🌟 Próximas Melhorias
+
+- [ ] App Mobile (React Native)
+- [ ] Impressão de comandas e cupons fiscais
+- [ ] Integração com sistemas de pagamento (Mercado Pago, PagSeguro)
+- [ ] Sistema de delivery
+- [ ] Programa de fidelidade
+- [ ] Analytics avançado com BI
+- [ ] Backup automático
+- [ ] Tema escuro/claro
 
 ## 📄 Licença
+
+Este projeto é proprietário. Todos os direitos reservados.
+
+## 👥 Equipe
+
+Desenvolvido por Diesel Bar Team
+
+---
+
+**Versão:** 1.0.0  
+**Última atualização:** 2025
 
 MIT License - Diesel Bar © 2026

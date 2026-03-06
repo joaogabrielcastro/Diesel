@@ -18,6 +18,7 @@ import {
 import { Calendar, TrendingUp, Package, Clock, DollarSign } from "lucide-react";
 import { reportsApi } from "../services/api";
 import { CardSkeleton } from "../components/LoadingSkeleton";
+import { useLanguageStore } from "../store/language";
 
 const COLORS = [
   "#3b82f6",
@@ -29,6 +30,7 @@ const COLORS = [
 ];
 
 export default function Reports() {
+  const { t } = useLanguageStore();
   const [dateRange, setDateRange] = useState({
     startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
       .toISOString()
@@ -82,7 +84,7 @@ export default function Reports() {
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Relatórios</h1>
+        <h1 className="text-3xl font-bold">{t("reports.title")}</h1>
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
@@ -95,7 +97,7 @@ export default function Reports() {
               }
               className="bg-dark-light border border-gray-700 rounded px-3 py-2 text-sm"
             />
-            <span className="text-gray-400">até</span>
+            <span className="text-gray-400">{t("reports.to")}</span>
             <input
               type="date"
               value={dateRange.endDate}
@@ -120,7 +122,9 @@ export default function Reports() {
           <div className="card hover:scale-105 transition-transform">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Total de Pedidos</p>
+                <p className="text-gray-400 text-sm">
+                  {t("reports.totalOrders")}
+                </p>
                 <p className="text-3xl font-bold mt-2">
                   {salesData?.data.totalOrders || 0}
                 </p>
@@ -134,7 +138,9 @@ export default function Reports() {
           <div className="card hover:scale-105 transition-transform">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Faturamento Total</p>
+                <p className="text-gray-400 text-sm">
+                  {t("reports.totalRevenue")}
+                </p>
                 <p className="text-3xl font-bold mt-2">
                   {formatCurrency(salesData?.data.totalRevenue || 0)}
                 </p>
@@ -148,7 +154,9 @@ export default function Reports() {
           <div className="card hover:scale-105 transition-transform">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Ticket Médio</p>
+                <p className="text-gray-400 text-sm">
+                  {t("reports.averageTicket")}
+                </p>
                 <p className="text-3xl font-bold mt-2">
                   {formatCurrency(salesData?.data.averageOrderValue || 0)}
                 </p>
@@ -165,7 +173,9 @@ export default function Reports() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Revenue Chart */}
         <div className="card">
-          <h2 className="text-xl font-bold mb-4">Faturamento Diário</h2>
+          <h2 className="text-xl font-bold mb-4">
+            {t("reports.dailyRevenue")}
+          </h2>
           {loadingRevenue ? (
             <div className="h-64 flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -194,7 +204,7 @@ export default function Reports() {
                   dataKey="revenue"
                   stroke="#3b82f6"
                   strokeWidth={2}
-                  name="Faturamento"
+                  name={t("reports.revenue")}
                   dot={{ fill: "#3b82f6", r: 4 }}
                 />
               </LineChart>
@@ -204,7 +214,7 @@ export default function Reports() {
 
         {/* Top Products Chart */}
         <div className="card">
-          <h2 className="text-xl font-bold mb-4">Produtos Mais Vendidos</h2>
+          <h2 className="text-xl font-bold mb-4">{t("reports.topProducts")}</h2>
           {loadingProducts ? (
             <div className="h-64 flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -228,7 +238,11 @@ export default function Reports() {
                     borderRadius: "0.5rem",
                   }}
                 />
-                <Bar dataKey="totalQuantity" fill="#10b981" name="Quantidade" />
+                <Bar
+                  dataKey="totalQuantity"
+                  fill="#10b981"
+                  name={t("reports.quantity")}
+                />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -236,7 +250,9 @@ export default function Reports() {
 
         {/* Orders Status Pie Chart */}
         <div className="card">
-          <h2 className="text-xl font-bold mb-4">Status dos Pedidos</h2>
+          <h2 className="text-xl font-bold mb-4">
+            {t("reports.ordersStatus")}
+          </h2>
           {loadingStatus ? (
             <div className="h-64 flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -277,7 +293,7 @@ export default function Reports() {
         <div className="card">
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
             <Clock size={20} />
-            Horários de Pico
+            {t("reports.peakHours")}
           </h2>
           {loadingPeakHours ? (
             <div className="h-64 flex items-center justify-center">
@@ -301,7 +317,11 @@ export default function Reports() {
                   }}
                   labelFormatter={(hour) => `${hour}:00 - ${hour}:59`}
                 />
-                <Bar dataKey="orders" fill="#f59e0b" name="Pedidos" />
+                <Bar
+                  dataKey="orders"
+                  fill="#f59e0b"
+                  name={t("reports.orders")}
+                />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -311,17 +331,29 @@ export default function Reports() {
       {/* Top Products Table */}
       {!loadingProducts && topProductsData?.data && (
         <div className="card mt-6">
-          <h2 className="text-xl font-bold mb-4">Detalhamento de Produtos</h2>
+          <h2 className="text-xl font-bold mb-4">
+            {t("reports.productDetails")}
+          </h2>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-800">
                   <th className="text-left py-3 px-4">#</th>
-                  <th className="text-left py-3 px-4">Produto</th>
-                  <th className="text-left py-3 px-4">Categoria</th>
-                  <th className="text-right py-3 px-4">Quantidade</th>
-                  <th className="text-right py-3 px-4">Faturamento</th>
-                  <th className="text-right py-3 px-4">Pedidos</th>
+                  <th className="text-left py-3 px-4">
+                    {t("reports.productName")}
+                  </th>
+                  <th className="text-left py-3 px-4">
+                    {t("reports.category")}
+                  </th>
+                  <th className="text-right py-3 px-4">
+                    {t("reports.quantity")}
+                  </th>
+                  <th className="text-right py-3 px-4">
+                    {t("reports.revenue")}
+                  </th>
+                  <th className="text-right py-3 px-4">
+                    {t("reports.orders")}
+                  </th>
                 </tr>
               </thead>
               <tbody>

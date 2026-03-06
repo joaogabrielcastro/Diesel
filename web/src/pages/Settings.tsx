@@ -4,10 +4,12 @@ import { Upload, Image as ImageIcon, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import api from "../services/api";
 import { useAuthStore } from "../store/auth";
+import { useLanguageStore } from "../store/language";
 
 export default function Settings() {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
+  const { t } = useLanguageStore();
   const [logo, setLogo] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
@@ -37,13 +39,13 @@ export default function Settings() {
       return response.data;
     },
     onSuccess: () => {
-      toast.success("Logo atualizado com sucesso!");
+      toast.success(t("settings.uploadSuccess"));
       queryClient.invalidateQueries({ queryKey: ["establishment"] });
       setLogo(null);
       setLogoPreview(null);
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Erro ao fazer upload");
+      toast.error(error.response?.data?.message || t("settings.uploadError"));
     },
   });
 
@@ -52,13 +54,13 @@ export default function Settings() {
     if (file) {
       // Validar tamanho (5MB)
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("Imagem muito grande. Máximo 5MB");
+        toast.error(t("settings.fileTooLarge"));
         return;
       }
 
       // Validar tipo
       if (!file.type.startsWith("image/")) {
-        toast.error("Apenas imagens são permitidas");
+        toast.error(t("settings.invalidFile"));
         return;
       }
 
@@ -92,10 +94,8 @@ export default function Settings() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Configurações</h1>
-          <p className="text-gray-400 mt-2">
-            Gerencie as configurações do estabelecimento
-          </p>
+          <h1 className="text-3xl font-bold">{t("settings.title")}</h1>
+          <p className="text-gray-400 mt-2">{t("settings.subtitle")}</p>
         </div>
       </div>
 
@@ -104,13 +104,15 @@ export default function Settings() {
         <div className="card">
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
             <ImageIcon size={20} />
-            Logo do Estabelecimento
+            {t("settings.uploadLogo")}
           </h2>
 
           {/* Logo Atual */}
           {currentLogoUrl && !logoPreview && (
             <div className="mb-4">
-              <p className="text-sm text-gray-400 mb-2">Logo Atual:</p>
+              <p className="text-sm text-gray-400 mb-2">
+                {t("settings.currentLogo")}:
+              </p>
               <div className="bg-gray-800 rounded-lg p-4 flex items-center justify-center">
                 <img
                   src={currentLogoUrl}
@@ -128,7 +130,9 @@ export default function Settings() {
           {/* Preview do novo logo */}
           {logoPreview && (
             <div className="mb-4">
-              <p className="text-sm text-gray-400 mb-2">Novo Logo:</p>
+              <p className="text-sm text-gray-400 mb-2">
+                {t("settings.logoPreview")}:
+              </p>
               <div className="bg-gray-800 rounded-lg p-4 flex items-center justify-center">
                 <img
                   src={logoPreview}
@@ -147,7 +151,7 @@ export default function Settings() {
                 className="btn btn-secondary w-full flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Upload size={20} />
-                Selecionar Imagem
+                {t("settings.selectImage")}
               </label>
               <input
                 id="logo-upload"
@@ -169,7 +173,9 @@ export default function Settings() {
                   className="btn btn-primary flex-1 flex items-center justify-center gap-2"
                 >
                   <Save size={20} />
-                  {uploadLogo.isPending ? "Salvando..." : "Salvar Logo"}
+                  {uploadLogo.isPending
+                    ? t("common.loading")
+                    : t("settings.upload")}
                 </button>
                 <button
                   onClick={handleCancel}
@@ -177,7 +183,7 @@ export default function Settings() {
                   className="btn bg-gray-700 hover:bg-gray-600 flex items-center justify-center gap-2"
                 >
                   <X size={20} />
-                  Cancelar
+                  {t("common.cancel")}
                 </button>
               </div>
             )}

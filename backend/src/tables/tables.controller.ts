@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Body,
   Param,
   UseGuards,
@@ -37,5 +38,10 @@ export class TablesController {
       req.user.establishmentId,
       status,
     );
+  }
+
+  @Delete(":id")
+  deleteTable(@Request() req, @Param("id") id: string) {
+    return this.tablesService.deleteTable(id, req.user.establishmentId);
   }
 }

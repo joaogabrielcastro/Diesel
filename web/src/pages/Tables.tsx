@@ -14,6 +14,8 @@ import {
   ChefHat,
   CheckCircle2,
   Loader2,
+  Trash2,
+  XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -24,6 +26,8 @@ import {
   categoriesApi,
 } from "../services/api";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
+import { useConfirm } from "../hooks/useConfirm";
+import { useLanguageStore } from "../store/language";
 
 type OrderItem = {
   productId: string;
@@ -39,11 +43,11 @@ const STATUS_COLOR: Record<string, string> = {
   CLEANING: "border-blue-500 bg-blue-800 hover:bg-blue-700",
 };
 
-const STATUS_LABEL: Record<string, string> = {
-  AVAILABLE: "Disponível",
-  OCCUPIED: "Ocupada",
-  RESERVED: "Reservada",
-  CLEANING: "Limpeza",
+const STATUS_LABEL_KEYS = {
+  AVAILABLE: "tables.available" as const,
+  OCCUPIED: "tables.occupied" as const,
+  RESERVED: "tables.reserved" as const,
+  CLEANING: "tables.cleaning" as const,
 };
 
 const fmt = (v: number) =>
@@ -60,6 +64,7 @@ function NewOrderModal({
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
+  const { t } = useLanguageStore();
   // If we already have a comanda (mesa ocupada → Add Order), skip setup
   const [step, setStep] = useState<"setup" | "products">(
     existingComandaId ? "products" : "setup",
@@ -112,12 +117,30 @@ function NewOrderModal({
         })),
       }),
     onSuccess: () => {
-      toast.success("Pedido enviado para a cozinha! 🍳");
+      toast.success(t("tables.orderCreated"));
       queryClient.invalidateQueries({ queryKey: ["tables"] });
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       onClose();
     },
-    onError: () => toast.error("Erro ao enviar pedido"),
+    onError: (error: any) => {
+      // Se for erro de estoque, mostra os detalhes
+      if (error?.response?.data?.errors?.length > 0) {
+        const stockErrors = error.response.data.errors;
+        toast.error(
+          <div>
+            <p className="font-bold mb-1">Produtos sem estoque:</p>
+            {stockErrors.map((err: string, i: number) => (
+              <p key={i} className="text-xs">
+                • {err}
+              </p>
+            ))}
+          </div>,
+          { duration: 5000 },
+        );
+      } else {
+        toast.error(t("tables.orderError"));
+      }
+    },
   });
 
   const addItem = (product: any) => {
@@ -157,9 +180,13 @@ function NewOrderModal({
       <div className="bg-gray-900 rounded-xl w-full max-w-3xl max-h-[92vh] flex flex-col">
         <div className="flex items-center justify-between p-5 border-b border-gray-800">
           <div>
-            <h2 className="text-2xl font-bold">Mesa {table.number}</h2>
+            <h2 className="text-2xl font-bold">
+              {t("tables.table")} {table.number}
+            </h2>
             <p className="text-gray-400 text-sm">
-              {step === "setup" ? "Abrir comanda" : "Escolher produtos"}
+              {step === "setup"
+                ? t("tables.customerName")
+                : t("tables.selectProducts")}
             </p>
           </div>
           <button
@@ -174,12 +201,12 @@ function NewOrderModal({
           <div className="p-6 space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">
-                Nome do cliente (opcional)
+                {t("tables.customerName")} {t("tables.optional")}
               </label>
               <input
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                placeholder={`Mesa ${table.number}`}
+                placeholder={`${t("tables.table")} ${table.number}`}
                 className="input w-full"
                 onKeyDown={(e) => e.key === "Enter" && createComanda.mutate()}
                 autoFocus
@@ -190,9 +217,7 @@ function NewOrderModal({
               disabled={createComanda.isPending}
               className="btn btn-primary w-full text-lg py-3"
             >
-              {createComanda.isPending
-                ? "Abrindo comanda..."
-                : "Abrir Comanda →"}
+              {createComanda.isPending ? t("common.loading") : t("tables.next")}
             </button>
           </div>
         ) : (
@@ -209,7 +234,7 @@ function NewOrderModal({
                       : "bg-gray-800 hover:bg-gray-700"
                   }`}
                 >
-                  Todos
+                  {t("common.all")}
                 </button>
                 {categories?.map((cat: any) => (
                   <button
@@ -232,23 +257,41 @@ function NewOrderModal({
                     const qty =
                       items.find((i) => i.productId === product.id)?.quantity ??
                       0;
+
+                    // Verificar se produto tem estoque
+                    const hasStockControl = product.stockControl === true;
+                    const currentStock = Number(product.stockQuantity) || 0;
+                    const isOutOfStock = hasStockControl && currentStock <= 0;
+
                     return (
                       <div
                         key={product.id}
-                        onClick={() => addItem(product)}
-                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                          qty > 0
-                            ? "border-primary bg-primary/10"
-                            : "border-gray-700 hover:border-gray-600 bg-gray-800/50"
+                        onClick={() => !isOutOfStock && addItem(product)}
+                        className={`p-3 rounded-lg border-2 transition-all relative ${
+                          isOutOfStock
+                            ? "border-gray-800 bg-gray-900/50 opacity-50 cursor-not-allowed"
+                            : qty > 0
+                              ? "border-primary bg-primary/10 cursor-pointer"
+                              : "border-gray-700 hover:border-gray-600 bg-gray-800/50 cursor-pointer"
                         }`}
                       >
+                        {isOutOfStock && (
+                          <div className="absolute top-1 right-1 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full font-medium">
+                            {t("products.unavailable")}
+                          </div>
+                        )}
                         <p className="font-medium text-sm line-clamp-2">
                           {product.name}
                         </p>
                         <p className="text-primary font-bold mt-1 text-sm">
                           {fmt(product.price)}
                         </p>
-                        {qty > 0 && (
+                        {hasStockControl && !isOutOfStock && (
+                          <p className="text-xs text-gray-400 mt-1">
+                            {t("products.stock")}: {currentStock}
+                          </p>
+                        )}
+                        {qty > 0 && !isOutOfStock && (
                           <div
                             className="flex items-center gap-2 mt-2"
                             onClick={(e) => e.stopPropagation()}
@@ -279,12 +322,12 @@ function NewOrderModal({
             {/* Carrinho */}
             <div className="w-full md:w-80 border-t md:border-t-0 md:border-l border-gray-800 flex flex-col p-4 bg-gray-900/50 md:bg-transparent h-[40vh] md:h-auto">
               <h3 className="font-bold mb-3 flex items-center gap-2 text-sm">
-                <ShoppingCart size={16} /> Pedido
+                <ShoppingCart size={16} /> {t("tables.cart")}
               </h3>
               <div className="flex-1 overflow-y-auto space-y-2 min-h-0 mb-3">
                 {items.length === 0 ? (
                   <p className="text-gray-500 text-xs text-center py-4">
-                    Nenhum item selecionado
+                    {t("tables.emptyDesc")}
                   </p>
                 ) : (
                   items.map((item) => (
@@ -311,14 +354,14 @@ function NewOrderModal({
                 )}
               </div>
               <textarea
-                placeholder="Obs: Sem cebola, etc..."
+                placeholder={t("tables.observations")}
                 value={obs}
                 onChange={(e) => setObs(e.target.value)}
                 className="input text-xs mb-3 resize-none h-14 bg-gray-800 border-gray-700 focus:border-primary"
               />
               <div className="pt-3 border-t border-gray-800">
                 <div className="flex justify-between font-bold text-sm mb-3">
-                  <span>Total</span>
+                  <span>{t("tables.subtotal")}</span>
                   <span className="text-primary">{fmt(total)}</span>
                 </div>
                 <button
@@ -327,8 +370,8 @@ function NewOrderModal({
                   className="btn btn-primary w-full text-sm disabled:opacity-50 py-3"
                 >
                   {createOrder.isPending
-                    ? "Enviando..."
-                    : "Enviar p/ Cozinha 🍳"}
+                    ? t("common.loading")
+                    : t("tables.finishOrder")}
                 </button>
               </div>
             </div>
@@ -348,6 +391,8 @@ function OccupiedTableModal({
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
+  const { confirm } = useConfirm();
+  const { t } = useLanguageStore();
   const [showNewOrder, setShowNewOrder] = useState(false);
 
   const { data: comanda, isLoading } = useQuery({
@@ -361,10 +406,31 @@ function OccupiedTableModal({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tables"] });
       queryClient.invalidateQueries({ queryKey: ["comanda-table", table.id] });
-      toast.success("Status atualizado");
+      toast.success(t("tables.updated"));
       onClose();
     },
   });
+
+  const cancelOrder = useMutation({
+    mutationFn: (orderId: string) =>
+      ordersApi.updateStatus(orderId, "CANCELLED"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["comanda-table", table.id] });
+      toast.success(t("kitchen.cancelled"));
+    },
+    onError: () => toast.error(t("common.error")),
+  });
+
+  const handleCancelOrder = async (orderId: string) => {
+    await confirm({
+      title: t("kitchen.cancel"),
+      message: t("kitchen.confirmMessage"),
+      confirmText: t("common.yes"),
+      cancelText: t("common.cancel"),
+      variant: "danger",
+      onConfirm: () => cancelOrder.mutate(orderId),
+    });
+  };
 
   // Flatten all items across every order for summary view
   const allItems: { name: string; qty: number; price: number }[] = [];
@@ -396,24 +462,29 @@ function OccupiedTableModal({
     { label: string; cls: string; icon: JSX.Element | null }
   > = {
     PENDING: {
-      label: "Aguardando",
+      label: t("orders.pending"),
       cls: "bg-yellow-900 text-yellow-300",
       icon: <Clock size={11} />,
     },
     PREPARING: {
-      label: "Preparando",
+      label: t("orders.preparing"),
       cls: "bg-blue-900 text-blue-300",
       icon: <ChefHat size={11} />,
     },
     READY: {
-      label: "Pronto",
+      label: t("orders.ready"),
       cls: "bg-green-900 text-green-300",
       icon: <CheckCircle2 size={11} />,
     },
     DELIVERED: {
-      label: "Entregue",
+      label: t("orders.delivered"),
       cls: "bg-gray-700 text-gray-400",
       icon: <CheckCircle2 size={11} />,
+    },
+    CANCELLED: {
+      label: t("orders.cancelled"),
+      cls: "bg-red-900 text-red-400",
+      icon: <XCircle size={11} />,
     },
   };
 
@@ -425,7 +496,7 @@ function OccupiedTableModal({
           <div>
             <h2 className="text-xl font-bold flex items-center gap-2">
               <Receipt size={20} className="text-red-400" />
-              Mesa {table.number}
+              {t("tables.table")} {table.number}
             </h2>
             {comanda?.customerName && (
               <p className="text-gray-400 text-sm mt-0.5">
@@ -445,12 +516,12 @@ function OccupiedTableModal({
         <div className="flex-1 overflow-y-auto min-h-0">
           {isLoading ? (
             <div className="flex items-center justify-center py-12 text-gray-400 gap-2">
-              <Loader2 size={18} className="animate-spin" /> Carregando
-              comanda...
+              <Loader2 size={18} className="animate-spin" />{" "}
+              {t("common.loading")}
             </div>
           ) : !comanda ? (
             <div className="text-center py-10 text-gray-500 text-sm">
-              Nenhuma comanda aberta encontrada
+              {t("payments.noOrders")}
             </div>
           ) : (
             <div className="p-4 space-y-4">
@@ -458,7 +529,7 @@ function OccupiedTableModal({
               {allItems.length > 0 && (
                 <div>
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                    Consumo
+                    {t("payments.consumption")}
                   </p>
                   <div className="bg-gray-800 rounded-lg overflow-hidden">
                     {allItems.map((item, idx) => (
@@ -478,7 +549,7 @@ function OccupiedTableModal({
                       </div>
                     ))}
                     <div className="flex justify-between items-center px-4 py-3 bg-gray-800/80 font-bold">
-                      <span>Total</span>
+                      <span>{t("payments.total")}</span>
                       <span className="text-primary text-lg">{fmt(total)}</span>
                     </div>
                   </div>
@@ -489,7 +560,7 @@ function OccupiedTableModal({
               {comanda.orders?.length > 0 && (
                 <div>
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                    Pedidos ({comanda.orders.length})
+                    {t("tables.orders")} ({comanda.orders.length})
                   </p>
                   <div className="space-y-2">
                     {comanda.orders.map((order: any, idx: number) => {
@@ -507,11 +578,23 @@ function OccupiedTableModal({
                             <span className="text-xs text-gray-400">
                               Pedido #{idx + 1}
                             </span>
-                            <span
-                              className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${badge.cls}`}
-                            >
-                              {badge.icon} {badge.label}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${badge.cls}`}
+                              >
+                                {badge.icon} {badge.label}
+                              </span>
+                              {order.status === "PENDING" && (
+                                <button
+                                  onClick={() => handleCancelOrder(order.id)}
+                                  disabled={cancelOrder.isPending}
+                                  className="text-red-500 hover:text-red-400 disabled:opacity-50"
+                                  title="Cancelar pedido"
+                                >
+                                  <XCircle size={15} />
+                                </button>
+                              )}
+                            </div>
                           </div>
                           <p className="text-sm text-gray-300">
                             {order.items
@@ -547,7 +630,7 @@ function OccupiedTableModal({
             onClick={() => setShowNewOrder(true)}
             className="btn btn-primary w-full flex items-center justify-center gap-2"
           >
-            <Plus size={18} /> Adicionar Pedido
+            <Plus size={18} /> {t("tables.addOrder")}
           </button>
           <div className="flex gap-3">
             <button
@@ -555,14 +638,14 @@ function OccupiedTableModal({
               disabled={updateStatus.isPending}
               className="btn bg-blue-700 hover:bg-blue-600 flex-1 text-sm"
             >
-              Limpeza
+              {t("tables.cleaning")}
             </button>
             <button
               onClick={() => updateStatus.mutate("AVAILABLE")}
               disabled={updateStatus.isPending}
               className="btn bg-green-700 hover:bg-green-600 flex-1 text-sm"
             >
-              Liberar Mesa
+              {t("tables.available")}
             </button>
           </div>
         </div>
@@ -587,28 +670,29 @@ function OccupiedTableModal({
 // ─── Modal Nova Mesa ──────────────────────────────────────────────────────────
 function NewTableModal({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient();
+  const { t } = useLanguageStore();
   const [number, setNumber] = useState("");
   const [capacity, setCapacity] = useState("4");
 
   const createTable = useMutation({
     mutationFn: () =>
       tablesApi.create({
-        number: parseInt(number),
+        number: number.trim(),
         capacity: parseInt(capacity),
       }),
     onSuccess: () => {
-      toast.success("Mesa criada!");
+      toast.success(t("tables.created"));
       queryClient.invalidateQueries({ queryKey: ["tables"] });
       onClose();
     },
-    onError: () => toast.error("Erro ao criar mesa"),
+    onError: () => toast.error(t("tables.tableError")),
   });
 
   return (
     <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-4">
       <div className="bg-gray-900 rounded-xl w-full max-w-sm p-6">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xl font-bold">Nova Mesa</h2>
+          <h2 className="text-xl font-bold">{t("tables.newTable")}</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-800 rounded-lg"
@@ -619,7 +703,7 @@ function NewTableModal({ onClose }: { onClose: () => void }) {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-2">
-              Número da mesa
+              {t("tables.number")}
             </label>
             <input
               type="number"
@@ -633,7 +717,7 @@ function NewTableModal({ onClose }: { onClose: () => void }) {
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">
-              Capacidade (pessoas)
+              {t("tables.capacity")}
             </label>
             <input
               type="number"
@@ -649,7 +733,7 @@ function NewTableModal({ onClose }: { onClose: () => void }) {
             disabled={!number || createTable.isPending}
             className="btn btn-primary w-full disabled:opacity-50"
           >
-            {createTable.isPending ? "Criando..." : "Criar Mesa"}
+            {createTable.isPending ? t("common.loading") : t("common.save")}
           </button>
         </div>
       </div>
@@ -663,6 +747,32 @@ export default function Tables() {
   const [showNewTable, setShowNewTable] = useState(false);
   const queryClient = useQueryClient();
   const { socket } = useWebSocket();
+  const { confirm } = useConfirm();
+  const { t } = useLanguageStore();
+
+  const deleteTable = useMutation({
+    mutationFn: (id: string) => tablesApi.delete(id),
+    onSuccess: () => {
+      toast.success(t("tables.deleted"));
+      queryClient.invalidateQueries({ queryKey: ["tables"] });
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message || t("tables.tableError");
+      toast.error(msg);
+    },
+  });
+
+  const handleDeleteTable = async (e: React.MouseEvent, table: any) => {
+    e.stopPropagation();
+    await confirm({
+      title: t("common.delete"),
+      message: t("tables.deleteConfirm"),
+      confirmText: t("common.yes"),
+      cancelText: t("common.cancel"),
+      variant: "danger",
+      onConfirm: () => deleteTable.mutate(table.id),
+    });
+  };
 
   // Real-time updates for table status
   useEffect(() => {
@@ -723,12 +833,12 @@ export default function Tables() {
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Mesas</h1>
+        <h1 className="text-3xl font-bold">{t("tables.title")}</h1>
         <button
           onClick={() => setShowNewTable(true)}
           className="btn btn-primary flex items-center gap-2"
         >
-          <Plus size={18} /> Nova Mesa
+          <Plus size={18} /> {t("tables.newTable")}
         </button>
       </div>
 
@@ -737,29 +847,29 @@ export default function Tables() {
         <div className="card text-center py-4">
           <p className="text-3xl font-bold text-green-400">{available}</p>
           <p className="text-sm text-gray-400 mt-1 flex items-center justify-center gap-1">
-            <Users size={14} /> Disponíveis
+            <Users size={14} /> {t("tables.available")}
           </p>
         </div>
         <div className="card text-center py-4">
           <p className="text-3xl font-bold text-red-400">{occupied}</p>
           <p className="text-sm text-gray-400 mt-1 flex items-center justify-center gap-1">
-            <ClipboardList size={14} /> Ocupadas
+            <ClipboardList size={14} /> {t("tables.occupied")}
           </p>
         </div>
         <div className="card text-center py-4">
           <p className="text-3xl font-bold">{tables?.length ?? 0}</p>
-          <p className="text-sm text-gray-400 mt-1">Total</p>
+          <p className="text-sm text-gray-400 mt-1">{t("payments.total")}</p>
         </div>
       </div>
 
       {/* Legenda */}
       <div className="flex gap-4 mb-6 flex-wrap text-sm">
-        {Object.entries(STATUS_LABEL).map(([k, v]) => (
+        {Object.entries(STATUS_LABEL_KEYS).map(([k, v]) => (
           <span key={k} className="flex items-center gap-2 text-gray-400">
             <span
               className={`w-3 h-3 rounded-full ${STATUS_COLOR[k]?.split(" ")[0]}`}
             />
-            {v}
+            {t(v)}
           </span>
         ))}
         <span className="text-gray-500 text-xs ml-auto">
@@ -775,19 +885,33 @@ export default function Tables() {
             <div
               key={table.id}
               onClick={() => setSelectedTable(table)}
-              className={`rounded-xl border-2 p-4 cursor-pointer transition-all hover:scale-105 text-center select-none ${STATUS_COLOR[table.status] ?? "border-gray-600 bg-gray-800"}`}
+              className={`relative rounded-xl border-2 p-4 cursor-pointer transition-all hover:scale-105 text-center select-none ${STATUS_COLOR[table.status] ?? "border-gray-600 bg-gray-800"}`}
             >
+              {(table.status === "AVAILABLE" ||
+                table.status === "CLEANING") && (
+                <button
+                  onClick={(e) => handleDeleteTable(e, table)}
+                  disabled={deleteTable.isPending}
+                  className="absolute top-1 right-1 p-1 rounded hover:bg-black/30 text-white/50 hover:text-red-400 transition-colors"
+                  title="Excluir mesa"
+                >
+                  <Trash2 size={12} />
+                </button>
+              )}
               <p className="text-4xl font-bold">{table.number}</p>
               <p className="text-xs mt-1 font-medium opacity-90">
-                {STATUS_LABEL[table.status] ?? table.status}
+                {t(
+                  STATUS_LABEL_KEYS[
+                    table.status as keyof typeof STATUS_LABEL_KEYS
+                  ] ?? ("tables.available" as const),
+                )}
               </p>
               <p className="text-xs mt-1 opacity-60">{table.capacity}p</p>
             </div>
           ))}
           {(!tables || tables.length === 0) && (
             <div className="col-span-full text-center py-16 text-gray-400">
-              <p className="text-lg">Nenhuma mesa cadastrada</p>
-              <p className="text-sm mt-2">Clique em "Nova Mesa" para começar</p>
+              <p className="text-lg">{t("tables.noTables")}</p>
             </div>
           )}
         </div>

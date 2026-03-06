@@ -1,9 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
 import { DollarSign, ShoppingCart, Users, TrendingUp } from "lucide-react";
-import { ordersApi, tablesApi } from "../services/api";
+import { ordersApi, tablesApi, reportsApi } from "../services/api";
 import { CardSkeleton, ListSkeleton } from "../components/LoadingSkeleton";
+import { useLanguageStore } from "../store/language";
 
 export default function Dashboard() {
+  const { t } = useLanguageStore();
+
+  // Busca estatísticas consolidadas do dashboard
+  const { data: dashboardStats, isLoading: statsLoading } = useQuery({
+    queryKey: ["dashboard-stats"],
+    queryFn: async () => {
+      const response = await reportsApi.getDashboardStats();
+      return response.data;
+    },
+  });
+
   const { data: orders, isLoading: ordersLoading } = useQuery({
     queryKey: ["orders"],
     queryFn: async () => {
@@ -20,32 +32,39 @@ export default function Dashboard() {
     },
   });
 
-  const isLoading = ordersLoading || tablesLoading;
+  const isLoading = ordersLoading || tablesLoading || statsLoading;
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+  };
 
   const stats = [
     {
-      label: "Pedidos Hoje",
-      value: orders?.length || 0,
+      label: t("dashboard.ordersToday"),
+      value: dashboardStats?.ordersToday || 0,
       icon: ShoppingCart,
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
     },
     {
-      label: "Mesas Ocupadas",
-      value: tables?.filter((t: any) => t.status === "OCCUPIED").length || 0,
+      label: t("dashboard.activeTables"),
+      value: dashboardStats?.activeTables || 0,
       icon: Users,
       color: "text-green-500",
       bgColor: "bg-green-500/10",
     },
     {
-      label: "Faturamento",
-      value: "R$ 2.450",
+      label: t("dashboard.revenue"),
+      value: formatCurrency(dashboardStats?.revenueToday || 0),
       icon: DollarSign,
       color: "text-primary",
       bgColor: "bg-primary/10",
     },
     {
-      label: "Crescimento",
+      label: t("dashboard.growth"),
       value: "+12%",
       icon: TrendingUp,
       color: "text-purple-500",
@@ -55,7 +74,7 @@ export default function Dashboard() {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-8">{t("dashboard.title")}</h1>
 
       {isLoading ? (
         <>
@@ -92,7 +111,9 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="card">
-              <h2 className="text-xl font-bold mb-4">Pedidos Recentes</h2>
+              <h2 className="text-xl font-bold mb-4">
+                {t("dashboard.recentOrders")}
+              </h2>
               <div className="space-y-3">
                 {orders?.slice(0, 5).map((order: any) => (
                   <div
@@ -101,11 +122,14 @@ export default function Dashboard() {
                   >
                     <div>
                       <p className="font-medium">
-                        Mesa {order.comanda?.table?.number || "Cassino"}
+                        {t("dashboard.table")}{" "}
+                        {order.comanda?.table?.number || "Cassino"}
                       </p>
                       <p className="text-sm text-gray-400">
                         {order.items?.length}{" "}
-                        {order.items?.length === 1 ? "item" : "itens"}
+                        {order.items?.length === 1
+                          ? t("dashboard.item")
+                          : t("dashboard.items")}
                       </p>
                     </div>
                     <span
@@ -120,12 +144,12 @@ export default function Dashboard() {
                       }`}
                     >
                       {order.status === "PENDING"
-                        ? "Pendente"
+                        ? t("orders.pending")
                         : order.status === "PREPARING"
-                          ? "Preparando"
+                          ? t("orders.preparing")
                           : order.status === "READY"
-                            ? "Pronto"
-                            : "Entregue"}
+                            ? t("orders.ready")
+                            : t("orders.delivered")}
                     </span>
                   </div>
                 ))}
@@ -135,14 +159,16 @@ export default function Dashboard() {
                       className="mx-auto mb-2 opacity-50"
                       size={32}
                     />
-                    <p>Nenhum pedido hoje</p>
+                    <p>{t("dashboard.noOrders")}</p>
                   </div>
                 )}
               </div>
             </div>
 
             <div className="card">
-              <h2 className="text-xl font-bold mb-4">Status das Mesas</h2>
+              <h2 className="text-xl font-bold mb-4">
+                {t("dashboard.tableStatus")}
+              </h2>
               <div className="grid grid-cols-5 gap-3">
                 {tables?.map((table: any) => (
                   <div
@@ -156,14 +182,14 @@ export default function Dashboard() {
                             ? "bg-blue-600 hover:bg-blue-700"
                             : "bg-green-600 hover:bg-green-700"
                     }`}
-                    title={`Mesa ${table.number} - ${
+                    title={`${t("dashboard.table")} ${table.number} - ${
                       table.status === "OCCUPIED"
-                        ? "Ocupada"
+                        ? t("dashboard.occupied")
                         : table.status === "RESERVED"
-                          ? "Reservada"
+                          ? t("dashboard.reserved")
                           : table.status === "CLEANING"
-                            ? "Limpeza"
-                            : "Disponível"
+                            ? t("dashboard.cleaning")
+                            : t("dashboard.available")
                     }`}
                   >
                     {table.number}
@@ -172,7 +198,7 @@ export default function Dashboard() {
                 {(!tables || tables.length === 0) && (
                   <div className="col-span-5 text-center py-8 text-gray-400">
                     <Users className="mx-auto mb-2 opacity-50" size={32} />
-                    <p>Nenhuma mesa cadastrada</p>
+                    <p>{t("dashboard.noTables")}</p>
                   </div>
                 )}
               </div>

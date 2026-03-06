@@ -12,7 +12,6 @@ import Tables from "./pages/Tables";
 import Reports from "./pages/Reports";
 import Stock from "./pages/Stock";
 import Payments from "./pages/Payments";
-import Settings from "./pages/Settings";
 import Users from "./pages/Users";
 import Categories from "./pages/Categories";
 import Layout from "./components/Layout";
@@ -90,10 +89,7 @@ function App() {
             }
           >
             <Route index element={<Dashboard />} />
-            <Route path="products" element={<Products />} />
             <Route path="reports" element={<Reports />} />
-            <Route path="stock" element={<Stock />} />
-            <Route path="settings" element={<Settings />} />
             <Route path="users" element={<Users />} />
             <Route path="categories" element={<Categories />} />
           </Route>
@@ -106,6 +102,7 @@ function App() {
               </PrivateRoute>
             }
           >
+            <Route path="/products" element={<Products />} />
             <Route path="/tables" element={<Tables />} />
             <Route path="/payments" element={<Payments />} />
           </Route>
@@ -118,6 +115,17 @@ function App() {
             }
           >
             <Route path="/kitchen" element={<Kitchen />} />
+          </Route>
+
+          {/* Stock - Accessible by admin and cozinha */}
+          <Route
+            element={
+              <PrivateRoute roles={["admin", "cozinha", "kitchen"]}>
+                <Layout />
+              </PrivateRoute>
+            }
+          >
+            <Route path="/stock" element={<Stock />} />
           </Route>
 
           {/* Redirects for legacy routes/shortcuts */}

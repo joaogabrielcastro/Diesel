@@ -1,10 +1,18 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateOrderDto, UpdateOrderStatusDto } from "./dto/order.dto";
+import { ProductsService } from "../products/products.service";
 
 @Injectable()
 export class OrdersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private productsService: ProductsService,
+  ) {}
 
   async create(
     userId: string,
@@ -46,6 +54,46 @@ export class OrdersService {
       throw new NotFoundException("Some products not found");
     }
 
+    // Verificar estoque disponível antes de criar o pedido
+    const stockErrors: string[] = [];
+
+    for (const item of items) {
+      const product = products.find((p) => p.id === item.productId)!;
+
+      // Verificar produtos com controle direto de estoque
+      if (product.stockControl) {
+        const currentStock = Number(product.stockQuantity) || 0;
+
+        if (currentStock < item.quantity) {
+          stockErrors.push(
+            `${product.name}: estoque insuficiente (disponível: ${currentStock}, solicitado: ${item.quantity})`,
+          );
+        }
+      }
+      // Verificar ingredientes do produto
+      else if (product.ingredients.length > 0) {
+        for (const productIngredient of product.ingredients) {
+          const requiredQuantity =
+            productIngredient.quantity.toNumber() * item.quantity;
+          const available = Number(productIngredient.ingredient.currentStock);
+
+          if (available < requiredQuantity) {
+            stockErrors.push(
+              `${product.name}: ingrediente "${productIngredient.ingredient.name}" insuficiente (disponível: ${available} ${productIngredient.ingredient.unit}, necessário: ${requiredQuantity} ${productIngredient.ingredient.unit})`,
+            );
+          }
+        }
+      }
+    }
+
+    // Se houver erros de estoque, lançar exceção
+    if (stockErrors.length > 0) {
+      throw new BadRequestException({
+        message: "Estoque insuficiente para completar o pedido",
+        errors: stockErrors,
+      });
+    }
+
     // Create order with items in transaction
     const order = await this.prisma.$transaction(async (tx) => {
       const newOrder = await tx.order.create({
@@ -82,10 +130,23 @@ export class OrdersService {
         },
       });
 
-      // Decrease stock for products with ingredients
+      // Decrease stock for products
       for (const item of items) {
         const product = products.find((p) => p.id === item.productId)!;
-        if (product.ingredients.length > 0) {
+
+        // Se o produto tem controle de estoque direto, diminuir do stockQuantity
+        if (product.stockControl) {
+          await tx.product.update({
+            where: { id: product.id },
+            data: {
+              stockQuantity: {
+                decrement: item.quantity,
+              },
+            },
+          });
+        }
+        // Se o produto usa ingredientes, diminuir dos ingredientes
+        else if (product.ingredients.length > 0) {
           for (const ingredient of product.ingredients) {
             const quantityToDecrement =
               ingredient.quantity.toNumber() * item.quantity;
@@ -263,6 +324,63 @@ export class OrdersService {
           },
         },
       });
+
+      // Se o pedido foi cancelado, devolver o estoque
+      if (status === "CANCELLED") {
+        for (const item of updated.items) {
+          const product = await tx.product.findUnique({
+            where: { id: item.productId },
+            include: {
+              ingredients: {
+                include: {
+                  ingredient: true,
+                },
+              },
+            },
+          });
+
+          if (product) {
+            // Se tem controle direto de estoque, devolver
+            if (product.stockControl) {
+              await tx.product.update({
+                where: { id: product.id },
+                data: {
+                  stockQuantity: {
+                    increment: item.quantity,
+                  },
+                },
+              });
+            }
+            // Se usa ingredientes, devolver aos ingredientes
+            else if (product.ingredients.length > 0) {
+              for (const ingredient of product.ingredients) {
+                const quantityToReturn =
+                  ingredient.quantity.toNumber() * item.quantity;
+                await tx.ingredient.update({
+                  where: { id: ingredient.ingredientId },
+                  data: {
+                    currentStock: {
+                      increment: quantityToReturn,
+                    },
+                  },
+                });
+
+                // Log stock movement
+                await tx.stockMovement.create({
+                  data: {
+                    establishmentId,
+                    ingredientId: ingredient.ingredientId,
+                    userId,
+                    type: "IN",
+                    quantity: quantityToReturn,
+                    reason: `Order ${id} cancelled`,
+                  },
+                });
+              }
+            }
+          }
+        }
+      }
 
       return updated;
     });

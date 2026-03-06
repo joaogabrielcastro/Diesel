@@ -37,6 +37,24 @@ export class CreateProductDto {
   @IsOptional()
   @IsBoolean()
   active?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  stockControl?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  stockQuantity?: number;
+
+  @IsOptional()
+  @IsString()
+  stockUnit?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  minStock?: number;
 }
 
 export class UpdateProductDto {
@@ -72,4 +90,22 @@ export class UpdateProductDto {
   @IsOptional()
   @IsBoolean()
   active?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  stockControl?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  stockQuantity?: number;
+
+  @IsOptional()
+  @IsString()
+  stockUnit?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  minStock?: number;
 }
