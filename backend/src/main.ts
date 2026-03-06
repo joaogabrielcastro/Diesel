@@ -29,9 +29,30 @@ async function bootstrap() {
     }),
   );
 
-  // CORS - configuração correta para múltiplas origens
+  // CORS - configuração dinâmica para aceitar Vercel preview URLs
   app.enableCors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, Postman, etc)
+      if (!origin) return callback(null, true);
+
+      // If wildcard, allow all
+      if (corsOrigin === "*") return callback(null, true);
+
+      // Check if origin is in allowed list
+      const allowed = allowedOrigins.includes(origin);
+      if (allowed) return callback(null, true);
+
+      // Check if origin matches Vercel preview pattern
+      if (
+        origin.includes(".vercel.app") &&
+        origin.includes("diesel-web")
+      ) {
+        return callback(null, true);
+      }
+
+      // Reject all others
+      callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   });
 
