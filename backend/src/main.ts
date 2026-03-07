@@ -5,6 +5,7 @@ import { AppModule } from "./app.module";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { join } from "path";
 import helmet from "helmet";
+import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -44,6 +45,9 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  // Global exception filter - traduz erros para português
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   // CORS - configuração dinâmica para aceitar Vercel preview URLs
   app.enableCors({
