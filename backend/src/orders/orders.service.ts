@@ -6,12 +6,14 @@ import {
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateOrderDto, UpdateOrderStatusDto } from "./dto/order.dto";
 import { ProductsService } from "../products/products.service";
+import { PrinterService } from "../printer/printer.service";
 
 @Injectable()
 export class OrdersService {
   constructor(
     private prisma: PrismaService,
     private productsService: ProductsService,
+    private printerService: PrinterService,
   ) {}
 
   async create(
@@ -197,6 +199,14 @@ export class OrdersService {
 
       return newOrder;
     });
+
+    // Try to print order (don't fail if printing fails)
+    try {
+      await this.printerService.printOrder(order.id, establishmentId);
+    } catch (error) {
+      console.error("Failed to print order:", error);
+      // Continue - order was created successfully
+    }
 
     return order;
   }

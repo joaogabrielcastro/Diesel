@@ -286,6 +286,7 @@ model Order {
   user          User           @relation(fields: [userId], references: [id])
   items         OrderItem[]
   history       OrderHistory[]
+  prints        OrderPrint[]
 
   @@index([establishmentId])
   @@index([comandaId])
@@ -331,6 +332,19 @@ model OrderHistory {
 
   @@index([orderId])
   @@map("order_history")
+}
+
+model OrderPrint {
+  id           String   @id @default(uuid())
+  orderId      String   @map("order_id")
+  printedAt    DateTime @default(now()) @map("printed_at")
+  success      Boolean
+  errorMessage String?  @map("error_message")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("order_prints")
 }
 
 // ============================================

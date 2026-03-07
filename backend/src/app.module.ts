@@ -15,6 +15,7 @@ import { CategoriesModule } from "./categories/categories.module";
 import { OrdersModule } from "./orders/orders.module";
 import { StockModule } from "./stock/stock.module";
 import { PaymentsModule } from "./payments/payments.module";
+import { PrinterModule } from "./printer/printer.module";
 import { RealtimeModule } from "./realtime/realtime.module";
 import { ReportsModule } from "./reports/reports.module";
 import { UploadModule } from "./upload/upload.module";
@@ -78,6 +79,7 @@ import { AppController } from "./app.controller";
     OrdersModule,
     StockModule,
     PaymentsModule,
+    PrinterModule,
     ReportsModule,
     UploadModule,
   ],
