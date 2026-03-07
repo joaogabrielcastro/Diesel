@@ -145,6 +145,7 @@ model Comanda {
 
   @@index([establishmentId])
   @@index([tableId])
+  @@index([status, tableId])
   @@map("comandas")
 }
 
@@ -254,6 +255,7 @@ model StockMovement {
 
   @@index([establishmentId])
   @@index([ingredientId])
+  @@index([createdAt])
   @@map("stock_movements")
 }
 
@@ -288,6 +290,7 @@ model Order {
   @@index([establishmentId])
   @@index([comandaId])
   @@index([status])
+  @@index([status, createdAt])
   @@map("orders")
 }
 
@@ -347,6 +350,7 @@ model Payment {
   comanda Comanda @relation(fields: [comandaId], references: [id], onDelete: Cascade)
 
   @@index([comandaId])
+  @@index([status])
   @@map("payments")
 }
 

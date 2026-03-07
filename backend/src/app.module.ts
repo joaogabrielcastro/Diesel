@@ -1,7 +1,9 @@
 import { Module } from "@nestjs/common";
-import { ConfigModule } from "@nestjs/config";
-import { APP_GUARD } from "@nestjs/core";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
+import { CacheModule, CacheInterceptor } from "@nestjs/cache-manager";
+import { redisStore } from "cache-manager-redis-store";
 import { PrismaModule } from "./prisma/prisma.module";
 import { AuthModule } from "./auth/auth.module";
 import { UsersModule } from "./users/users.module";
@@ -31,6 +33,34 @@ import { AppController } from "./app.controller";
       limit: 100, // 100 requests
     }]),
 
+    // Cache with Redis (fallback to memory if Redis unavailable)
+    CacheModule.registerAsync({
+      isGlobal: true,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => {
+        const redisHost = configService.get("REDIS_HOST");
+        const redisPort = configService.get("REDIS_PORT");
+        
+        // If Redis is configured, use it, otherwise fallback to memory cache
+        if (redisHost && redisPort) {
+          try {
+            return {
+              store: redisStore as any,
+              host: redisHost,
+              port: redisPort,
+              password: configService.get("REDIS_PASSWORD") || undefined,
+              ttl: 300, // 5 minutes default
+            };
+          } catch (error) {
+            console.warn("Redis not available, using memory cache");
+            return { ttl: 300 };
+          }
+        }
+        return { ttl: 300 }; // Memory cache fallback
+      },
+    }),
+
     // Core modules
     PrismaModule,
     AuthModule,
@@ -54,6 +84,10 @@ import { AppController } from "./app.controller";
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheInterceptor,
     },
   ],
 })
