@@ -28,10 +28,12 @@ import { AppController } from "./app.controller";
     }),
 
     // Rate limiting - 10 requests per minute per IP
-    ThrottlerModule.forRoot([{
-      ttl: 60000, // 1 minute
-      limit: 100, // 100 requests
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 1 minute
+        limit: 100, // 100 requests
+      },
+    ]),
 
     // Cache with Redis (fallback to memory if Redis unavailable)
     CacheModule.registerAsync({
@@ -41,7 +43,7 @@ import { AppController } from "./app.controller";
       useFactory: async (configService: ConfigService) => {
         const redisHost = configService.get("REDIS_HOST");
         const redisPort = configService.get("REDIS_PORT");
-        
+
         // If Redis is configured, use it, otherwise fallback to memory cache
         if (redisHost && redisPort) {
           try {

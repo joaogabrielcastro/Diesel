@@ -99,12 +99,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
     let messageStr = Array.isArray(message) ? message.join(", ") : message;
 
     const commonTranslations: Record<string, string> = {
-      "Unauthorized": "Não autorizado. Faça login novamente.",
-      "Forbidden": "Você não tem permissão para acessar este recurso.",
+      Unauthorized: "Não autorizado. Faça login novamente.",
+      Forbidden: "Você não tem permissão para acessar este recurso.",
       "Not Found": "Recurso não encontrado.",
       "Bad Request": "Requisição inválida.",
       "Internal Server Error": "Erro interno do servidor.",
-      "Conflict": "Conflito. Este recurso já existe.",
+      Conflict: "Conflito. Este recurso já existe.",
       "Too Many Requests": "Muitas requisições. Tente novamente mais tarde.",
       "Validation failed": "Validação falhou. Verifique os dados enviados.",
     };

@@ -20,7 +20,7 @@ describe("Order Flow (e2e)", () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    
+
     // Add validation pipe like in main.ts
     app.useGlobalPipes(
       new ValidationPipe({
@@ -28,9 +28,9 @@ describe("Order Flow (e2e)", () => {
         transform: true,
       }),
     );
-    
+
     app.setGlobalPrefix("api");
-    
+
     await app.init();
 
     prisma = app.get<PrismaService>(PrismaService);
