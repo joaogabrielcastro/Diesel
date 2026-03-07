@@ -1,6 +1,7 @@
 import { Controller, Get, Put, Param, Body, UseGuards } from "@nestjs/common";
 import { EstablishmentsService } from "./establishments.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { UpdateEstablishmentDto } from "./dto/establishment.dto";
 
 @Controller("establishments")
 export class EstablishmentsController {
@@ -20,7 +21,7 @@ export class EstablishmentsController {
 
   @UseGuards(JwtAuthGuard)
   @Put(":id")
-  update(@Param("id") id: string, @Body() data: any) {
+  update(@Param("id") id: string, @Body() data: UpdateEstablishmentDto) {
     return this.service.update(id, data);
   }
 }

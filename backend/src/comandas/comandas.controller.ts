@@ -11,6 +11,7 @@ import {
 } from "@nestjs/common";
 import { ComandasService } from "./comandas.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { CreateComandaDto } from "./dto/comanda.dto";
 
 @Controller("comandas")
 @UseGuards(JwtAuthGuard)
@@ -18,7 +19,7 @@ export class ComandasController {
   constructor(private readonly comandasService: ComandasService) {}
 
   @Post()
-  create(@Request() req, @Body() data: any) {
+  create(@Request() req, @Body() data: CreateComandaDto) {
     return this.comandasService.create(req.user.establishmentId, data);
   }
 

@@ -12,6 +12,7 @@ import {
 } from "@nestjs/common";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { StockService } from "./stock.service";
+import { CreateIngredientDto, CreateStockMovementDto, UpdateStockDto } from "./dto/stock.dto";
 
 @Controller("stock")
 @UseGuards(JwtAuthGuard)
@@ -65,7 +66,7 @@ export class StockController {
   }
 
   @Post("ingredient")
-  async createIngredient(@Body() data: any, @Request() req: any) {
+  async createIngredient(@Body() data: CreateIngredientDto, @Request() req: any) {
     return this.stockService.createIngredient(req.user.establishmentId, {
       name: data.name,
       unit: data.unit,
@@ -81,7 +82,7 @@ export class StockController {
   }
 
   @Post("movement")
-  async createMovement(@Body() data: any, @Request() req: any) {
+  async createMovement(@Body() data: CreateStockMovementDto, @Request() req: any) {
     return this.stockService.createStockMovement(req.user.establishmentId, {
       productId: data.productId,
       quantity: data.quantity,
@@ -94,7 +95,7 @@ export class StockController {
   @Patch(":productId")
   async updateStock(
     @Param("productId") productId: string,
-    @Body() data: any,
+    @Body() data: UpdateStockDto,
     @Request() req: any,
   ) {
     return this.stockService.updateProductStock(

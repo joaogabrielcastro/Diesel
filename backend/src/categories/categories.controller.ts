@@ -11,6 +11,7 @@ import {
 } from "@nestjs/common";
 import { CategoriesService } from "./categories.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { CreateCategoryDto, UpdateCategoryDto } from "./dto/category.dto";
 
 @Controller("categories")
 @UseGuards(JwtAuthGuard)
@@ -23,12 +24,12 @@ export class CategoriesController {
   }
 
   @Post()
-  create(@Request() req, @Body() data: any) {
+  create(@Request() req, @Body() data: CreateCategoryDto) {
     return this.categoriesService.create(req.user.establishmentId, data);
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() data: any) {
+  update(@Param("id") id: string, @Body() data: UpdateCategoryDto) {
     return this.categoriesService.update(id, data);
   }
 

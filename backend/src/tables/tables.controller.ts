@@ -11,6 +11,7 @@ import {
 } from "@nestjs/common";
 import { TablesService } from "./tables.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { CreateTableDto, UpdateTableStatusDto } from "./dto/table.dto";
 
 @Controller("tables")
 @UseGuards(JwtAuthGuard)
@@ -23,7 +24,7 @@ export class TablesController {
   }
 
   @Post()
-  create(@Request() req, @Body() data: any) {
+  create(@Request() req, @Body() data: CreateTableDto) {
     return this.tablesService.create(req.user.establishmentId, data);
   }
 
@@ -31,12 +32,12 @@ export class TablesController {
   updateStatus(
     @Request() req,
     @Param("id") id: string,
-    @Body("status") status: string,
+    @Body() body: UpdateTableStatusDto,
   ) {
     return this.tablesService.updateStatus(
       id,
       req.user.establishmentId,
-      status,
+      body.status,
     );
   }
 
