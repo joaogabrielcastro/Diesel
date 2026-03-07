@@ -11,8 +11,7 @@ services:
       ./build.sh
 
     startCommand: |
-      npx prisma migrate deploy
-      npm run start:prod
+      npx prisma migrate deploy && (npx prisma db seed || echo "⚠️  Seed skipped") && npm run start:prod
 
     envVars:
       - key: NODE_VERSION
