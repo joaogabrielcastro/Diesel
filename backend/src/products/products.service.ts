@@ -190,9 +190,7 @@ export class ProductsService {
 
     // TODO: Emitir alerta via WebSocket se estoque abaixo do mínimo
     if (product.minStock && newStock < Number(product.minStock)) {
-      console.log(
-        `⚠️ ALERTA: Estoque baixo de ${product.name} (${newStock} ${product.stockUnit})`,
-      );
+      // Stock alert - integrate with WebSocket gateway
     }
   }
 

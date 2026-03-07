@@ -40,7 +40,6 @@ export class UsersService {
 
     // Map or fallback to uppercase
     const mapped = map[normalized] ?? normalized.toUpperCase();
-    console.log(`[UsersService] Role mapping: '${role}' -> '${mapped}'`);
     return mapped;
   }
 
@@ -57,7 +56,6 @@ export class UsersService {
 
   async create(establishmentId: string, data: any) {
     try {
-      console.log("Creating user payload:", JSON.stringify(data));
       const hashedPassword = await bcrypt.hash(data.password, 10);
 
       const dbRole = this.toDbRole(data.role);

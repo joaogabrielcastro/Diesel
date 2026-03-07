@@ -4,6 +4,7 @@ import { ConfigService } from "@nestjs/config";
 import { AppModule } from "./app.module";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { join } from "path";
+import helmet from "helmet";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -15,6 +16,21 @@ async function bootstrap() {
   // Parse CORS_ORIGIN - se tiver vírgulas, divide em array
   const allowedOrigins =
     corsOrigin === "*" ? "*" : corsOrigin.split(",").map((o) => o.trim());
+
+  // Security headers with Helmet
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", "data:", "https:"],
+          scriptSrc: ["'self'"],
+        },
+      },
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
 
   // Servir arquivos estáticos (uploads)
   app.useStaticAssets(join(__dirname, "..", "uploads"), {
@@ -43,10 +59,7 @@ async function bootstrap() {
       if (allowed) return callback(null, true);
 
       // Check if origin matches Vercel preview pattern
-      if (
-        origin.includes(".vercel.app") &&
-        origin.includes("diesel-web")
-      ) {
+      if (origin.includes(".vercel.app") && origin.includes("diesel-web")) {
         return callback(null, true);
       }
 

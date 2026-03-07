@@ -8,7 +8,7 @@ import {
   MessageBody,
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
-import { UseGuards } from "@nestjs/common";
+import { UseGuards, Logger } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 
@@ -19,6 +19,8 @@ import { ConfigService } from "@nestjs/config";
 export class RealtimeGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
+  private readonly logger = new Logger(RealtimeGateway.name);
+
   @WebSocketServer()
   server: Server;
 
@@ -35,7 +37,7 @@ export class RealtimeGateway
         client.handshake.headers?.authorization?.split(" ")[1];
 
       if (!token) {
-        console.log(`Client ${client.id} rejected: No token`);
+        this.logger.warn(`Client ${client.id} rejected: No token`);
         client.disconnect();
         return;
       }
@@ -43,16 +45,16 @@ export class RealtimeGateway
       const payload = await this.jwtService.verifyAsync(token);
       (client as any).user = payload;
 
-      console.log(`Client connected: ${client.id} | User: ${payload.sub}`);
+      this.logger.log(`Client connected: ${client.id} | User: ${payload.sub}`);
     } catch (error) {
-      console.log(`Client ${client.id} rejected: Invalid token`);
+      this.logger.warn(`Client ${client.id} rejected: Invalid token`);
       client.disconnect();
     }
   }
 
   handleDisconnect(client: Socket) {
     const user = (client as any).user;
-    console.log(
+    this.logger.log(
       `Client disconnected: ${client.id} | User: ${user?.sub || "Unknown"}`,
     );
   }
@@ -66,13 +68,13 @@ export class RealtimeGateway
 
     // Verificar se o usuário pertence ao estabelecimento
     if (user.establishmentId !== data.establishmentId) {
-      console.log(`Client ${client.id} tried to join wrong establishment`);
+      this.logger.warn(`Client ${client.id} tried to join wrong establishment`);
       return { error: "Unauthorized" };
     }
 
     const room = `establishment:${data.establishmentId}`;
     client.join(room);
-    console.log(`Client ${client.id} joined ${room}`);
+    this.logger.debug(`Client ${client.id} joined ${room}`);
 
     return { success: true, room };
   }
@@ -84,7 +86,7 @@ export class RealtimeGateway
   ) {
     const room = `establishment:${data.establishmentId}`;
     client.leave(room);
-    console.log(`Client ${client.id} left ${room}`);
+    this.logger.debug(`Client ${client.id} left ${room}`);
 
     return { success: true };
   }
@@ -92,7 +94,7 @@ export class RealtimeGateway
   // Broadcast new order to kitchen
   broadcastNewOrder(establishmentId: string, order: any) {
     const room = `establishment:${establishmentId}`;
-    console.log(`Broadcasting new order to ${room}:`, order.id);
+    this.logger.debug(`Broadcasting new order to ${room}: ${order.id}`);
     this.server.to(room).emit("new-order", {
       type: "NEW_ORDER",
       data: order,
@@ -103,7 +105,7 @@ export class RealtimeGateway
   // Broadcast order status update
   broadcastOrderUpdate(establishmentId: string, order: any) {
     const room = `establishment:${establishmentId}`;
-    console.log(`Broadcasting order update to ${room}:`, order.id);
+    this.logger.debug(`Broadcasting order update to ${room}: ${order.id}`);
     this.server.to(room).emit("order-updated", {
       type: "ORDER_UPDATED",
       data: order,
@@ -114,7 +116,7 @@ export class RealtimeGateway
   // Broadcast comanda update
   broadcastComandaUpdate(establishmentId: string, comanda: any) {
     const room = `establishment:${establishmentId}`;
-    console.log(`Broadcasting comanda update to ${room}:`, comanda.id);
+    this.logger.debug(`Broadcasting comanda update to ${room}: ${comanda.id}`);
     this.server.to(room).emit("comanda-updated", {
       type: "COMANDA_UPDATED",
       data: comanda,
@@ -125,7 +127,7 @@ export class RealtimeGateway
   // Broadcast table update
   broadcastTableUpdate(establishmentId: string, table: any) {
     const room = `establishment:${establishmentId}`;
-    console.log(`Broadcasting table update to ${room}:`, table.id);
+    this.logger.debug(`Broadcasting table update to ${room}: ${table.id}`);
     this.server.to(room).emit("table-updated", {
       type: "TABLE_UPDATED",
       data: table,
@@ -136,7 +138,7 @@ export class RealtimeGateway
   // Broadcast stock alert
   broadcastStockAlert(establishmentId: string, alert: any) {
     const room = `establishment:${establishmentId}`;
-    console.log(`Broadcasting stock alert to ${room}`);
+    this.logger.debug(`Broadcasting stock alert to ${room}`);
     this.server.to(room).emit("stock-alert", {
       type: "STOCK_ALERT",
       data: alert,
